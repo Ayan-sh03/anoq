@@ -1,7 +1,7 @@
 let requestCounter = {};
 let resetTimer;
 const time = 5 * 1000; // 5 seconds
-const requestLimit = 1; // 4 requests per 5 seconds
+const requestLimit = 1; // 1 requests per 5 seconds
 
 // Function to reset request counts
 const resetCounters = () => {

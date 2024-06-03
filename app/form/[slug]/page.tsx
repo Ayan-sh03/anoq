@@ -55,11 +55,19 @@ export default async function Submission({
           </DropdownMenu>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {data.map(async (item: any, index: number) => (
+      
+      
+      {data && data.length > 0 ? (<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {data?.map(async (item: any, index: number) => (
           <CardComponent email={item.email} name={item.name} key={index}  questions={item.question} choiceQuesions={item.choiceQuestion} />
         ))}
       </div>
+):(
+  <>
+    <h2 className="text-xl">No Submissions!</h2>
+  </>
+)}
+
     </main>
   );
 

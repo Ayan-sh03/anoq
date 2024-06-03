@@ -1,4 +1,5 @@
 import AlreadySubmitted from "@/components/AlreadySubmitted";
+import Closed from "@/components/Closed";
 import FormComponent from "@/components/FormComponent";
 import { notFound } from "next/navigation";
 
@@ -7,6 +8,11 @@ async function getData(slug: string) {
     cache: "no-store",
   });
   const data = await response.json();
+
+  console.log('====================================');
+  console.log(JSON.stringify(data, null, 2));
+  console.log('====================================');
+
 
   if (!response.ok) return notFound();
 
@@ -24,6 +30,10 @@ async function checkFilled(id: string) {
 async function Page({ params }: { params: { slug: string } }) {
   const data = await getData(params.slug);
 
+  if(data[0].status === "closed"){
+    return <Closed/>
+}
+
   if (data.length === 0) {
     notFound();
   }
@@ -31,9 +41,6 @@ async function Page({ params }: { params: { slug: string } }) {
   const res = await checkFilled(data[0].id);
   const form = await res.json();
 
-  console.log("====================================");
-  console.log(form);
-  console.log("====================================");
   if (!res.ok) {
     return <AlreadySubmitted />;
   }

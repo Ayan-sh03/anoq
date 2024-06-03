@@ -15,6 +15,10 @@ module default {
         required slug: str{constraint exclusive};
         multi question:Question;    
         multi choiceQuestion:MultipleChoiceQuestion;  
+        required status: str {
+        constraint one_of("open", "closed");
+        default := "open";
+        };
     }
 
     type Filled_Form extending ext::auth::Auditable{

@@ -18,6 +18,7 @@ export async function GET(req, { params }) {
       id,
       title,
       description,
+      status,
       question: {
         question_text,
               },

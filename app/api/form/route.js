@@ -24,14 +24,14 @@ export  async function POST(req,res ){
 
 
 
-    const {title,description,questions,choiceQuestions} = await req.json()
+    const {author:userEmail ,title,description,questions,choiceQuestions} = await req.json()
 
 
   const slug  =  generateSlug()
 
     const client = createClient()
 
-    const query = e.params({ items: e.json, title: e.str, description: e.str,choiceItems:e.json ,slug:e.str }, (params) => {
+    const query = e.params({ items: e.json, title: e.str, description: e.str,choiceItems:e.json ,slug:e.str,userEmail:e.str }, (params) => {
         const choiceQuestions = e.for(e.json_array_unpack(params.choiceItems), (item) => {
           return e.insert(e.MultipleChoiceQuestion, {
             question_text:e.cast(e.str, item['question_text']),
@@ -43,11 +43,16 @@ export  async function POST(req,res ){
             question_text:e.cast(e.str, item['question_text']),
           });
         });
+
+        const author = e.select(e.User, user => ({
+          filter_single: {email: userEmail}
+        }))
       
         return e.with(
-          [questions,choiceQuestions],
+          [questions,choiceQuestions,author],
           e.insert(e.Form, {
             title: params.title,
+            author: author,
             description: params.description,
             question: questions,
             choiceQuestion:choiceQuestions,
@@ -61,7 +66,8 @@ export  async function POST(req,res ){
         choiceItems:choiceQuestions,
         title,
         description,
-        slug
+        slug,
+        userEmail 
       });
       
 

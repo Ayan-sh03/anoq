@@ -13,48 +13,65 @@ export namespace std {
     export type Base64Alphabet = "standard" | "urlsafe";
   }
 }
-export namespace $default {
-  export interface User extends std.$Object {
-    "email": string;
-    "identity": ext.auth.Identity;
+export namespace cfg {
+  export interface ConfigObject extends std.BaseObject {}
+  export interface AbstractConfig extends ConfigObject {
+    "extensions": ExtensionConfig[];
+    "session_idle_timeout": edgedb.Duration;
+    "session_idle_transaction_timeout": edgedb.Duration;
+    "query_execution_timeout": edgedb.Duration;
+    "listen_port": number;
+    "listen_addresses": string[];
+    "auth": Auth[];
+    "allow_dml_in_functions"?: boolean | null;
+    "allow_bare_ddl"?: AllowBareDDL | null;
+    "apply_access_policies"?: boolean | null;
+    "allow_user_specified_id"?: boolean | null;
+    "cors_allow_origins": string[];
+    "auto_rebuild_query_cache"?: boolean | null;
+    "query_cache_mode"?: QueryCacheMode | null;
+    "shared_buffers"?: edgedb.ConfigMemory | null;
+    "query_work_mem"?: edgedb.ConfigMemory | null;
+    "maintenance_work_mem"?: edgedb.ConfigMemory | null;
+    "effective_cache_size"?: edgedb.ConfigMemory | null;
+    "effective_io_concurrency"?: number | null;
+    "default_statistics_target"?: number | null;
+    "force_database_error"?: string | null;
+    "_pg_prepared_statement_cache_size": number;
   }
-  export interface Filled_Form extends ext.auth.Auditable {
-    "choiceQuestion": MultipleChoiceQuestion[];
-    "form"?: Form | null;
-    "question": Question[];
+  export type AllowBareDDL = "AlwaysAllow" | "NeverAllow";
+  export interface Auth extends ConfigObject {
+    "priority": number;
+    "user": string[];
+    "method"?: AuthMethod | null;
+    "comment"?: string | null;
   }
-  export interface Form extends ext.auth.Auditable {
-    "title": string;
-    "question": Question[];
-    "description": string;
-    "author"?: User | null;
-    "choiceQuestion": MultipleChoiceQuestion[];
-    "slug": string;
+  export interface AuthMethod extends ConfigObject {
+    "transports": ConnectionTransport[];
   }
-  export interface Question extends std.$Object {
-    "question_text": string;
-    "answer"?: string | null;
+  export interface DatabaseConfig extends AbstractConfig {}
+  export interface BranchConfig extends DatabaseConfig {}
+  export interface Config extends AbstractConfig {}
+  export type ConnectionTransport = "TCP" | "TCP_PG" | "HTTP" | "SIMPLE_HTTP" | "HTTP_METRICS" | "HTTP_HEALTH";
+  export interface ExtensionConfig extends ConfigObject {
+    "cfg": AbstractConfig;
   }
-  export interface MultipleChoiceQuestion extends Question {
-    "choices": string[];
-    "selectedChoice": string[];
+  export interface InstanceConfig extends AbstractConfig {}
+  export interface JWT extends AuthMethod {
+    "transports": ConnectionTransport[];
   }
-  export interface current_user extends User {}
+  export interface Password extends AuthMethod {
+    "transports": ConnectionTransport[];
+  }
+  export type QueryCacheMode = "InMemory" | "RegInline" | "PgFunc" | "Default";
+  export interface SCRAM extends AuthMethod {
+    "transports": ConnectionTransport[];
+  }
+  export interface Trust extends AuthMethod {}
+  export interface mTLS extends AuthMethod {
+    "transports": ConnectionTransport[];
+  }
 }
-import User = $default.User;
-import Filled_Form = $default.Filled_Form;
-import Form = $default.Form;
-import Question = $default.Question;
-import MultipleChoiceQuestion = $default.MultipleChoiceQuestion;
-import current_user = $default.current_user;
-export type {
-  User,
-  Filled_Form,
-  Form,
-  Question,
-  MultipleChoiceQuestion,
-  current_user
-};
 export namespace ext {
   export namespace auth {
     export interface Auditable extends std.$Object {
@@ -186,68 +203,51 @@ export namespace ext {
     }
   }
 }
-export namespace __default {
-  export interface current_user extends $default.User {}
-}
-export namespace cfg {
-  export interface ConfigObject extends std.BaseObject {}
-  export interface AbstractConfig extends ConfigObject {
-    "extensions": ExtensionConfig[];
-    "session_idle_timeout": edgedb.Duration;
-    "session_idle_transaction_timeout": edgedb.Duration;
-    "query_execution_timeout": edgedb.Duration;
-    "listen_port": number;
-    "listen_addresses": string[];
-    "auth": Auth[];
-    "allow_dml_in_functions"?: boolean | null;
-    "allow_bare_ddl"?: AllowBareDDL | null;
-    "apply_access_policies"?: boolean | null;
-    "allow_user_specified_id"?: boolean | null;
-    "cors_allow_origins": string[];
-    "auto_rebuild_query_cache"?: boolean | null;
-    "query_cache_mode"?: QueryCacheMode | null;
-    "shared_buffers"?: edgedb.ConfigMemory | null;
-    "query_work_mem"?: edgedb.ConfigMemory | null;
-    "maintenance_work_mem"?: edgedb.ConfigMemory | null;
-    "effective_cache_size"?: edgedb.ConfigMemory | null;
-    "effective_io_concurrency"?: number | null;
-    "default_statistics_target"?: number | null;
-    "force_database_error"?: string | null;
-    "_pg_prepared_statement_cache_size": number;
+export namespace $default {
+  export interface Filled_Form extends ext.auth.Auditable {
+    "choiceQuestion": MultipleChoiceQuestion[];
+    "form"?: Form | null;
+    "question": Question[];
+    "email"?: string | null;
+    "name"?: string | null;
+    "userIp"?: string | null;
   }
-  export type AllowBareDDL = "AlwaysAllow" | "NeverAllow";
-  export interface Auth extends ConfigObject {
-    "priority": number;
-    "user": string[];
-    "method"?: AuthMethod | null;
-    "comment"?: string | null;
+  export interface Form extends ext.auth.Auditable {
+    "title": string;
+    "question": Question[];
+    "description": string;
+    "author"?: User | null;
+    "choiceQuestion": MultipleChoiceQuestion[];
+    "slug": string;
+    "status": string;
   }
-  export interface AuthMethod extends ConfigObject {
-    "transports": ConnectionTransport[];
+  export interface Question extends std.$Object {
+    "question_text": string;
+    "answer"?: string | null;
   }
-  export interface DatabaseConfig extends AbstractConfig {}
-  export interface BranchConfig extends DatabaseConfig {}
-  export interface Config extends AbstractConfig {}
-  export type ConnectionTransport = "TCP" | "TCP_PG" | "HTTP" | "SIMPLE_HTTP" | "HTTP_METRICS" | "HTTP_HEALTH";
-  export interface ExtensionConfig extends ConfigObject {
-    "cfg": AbstractConfig;
+  export interface MultipleChoiceQuestion extends Question {
+    "choices": string[];
+    "selectedChoice": string[];
   }
-  export interface InstanceConfig extends AbstractConfig {}
-  export interface JWT extends AuthMethod {
-    "transports": ConnectionTransport[];
-  }
-  export interface Password extends AuthMethod {
-    "transports": ConnectionTransport[];
-  }
-  export type QueryCacheMode = "InMemory" | "RegInline" | "PgFunc" | "Default";
-  export interface SCRAM extends AuthMethod {
-    "transports": ConnectionTransport[];
-  }
-  export interface Trust extends AuthMethod {}
-  export interface mTLS extends AuthMethod {
-    "transports": ConnectionTransport[];
+  export interface User extends std.$Object {
+    "email": string;
+    "username"?: string | null;
+    "given_name"?: string | null;
+    "family_name"?: string | null;
   }
 }
+import Filled_Form = $default.Filled_Form;
+import Form = $default.Form;
+import Question = $default.Question;
+import MultipleChoiceQuestion = $default.MultipleChoiceQuestion;
+import User = $default.User;
+export type {
+  Filled_Form,
+  Form,
+  Question,
+  MultipleChoiceQuestion,
+  User
+};
 export namespace fts {
   export type ElasticLanguage = "ara" | "bul" | "cat" | "ces" | "ckb" | "dan" | "deu" | "ell" | "eng" | "eus" | "fas" | "fin" | "fra" | "gle" | "glg" | "hin" | "hun" | "hye" | "ind" | "ita" | "lav" | "nld" | "nor" | "por" | "ron" | "rus" | "spa" | "swe" | "tha" | "tur" | "zho" | "edb_Brazilian" | "edb_ChineseJapaneseKorean";
   export type Language = "ara" | "hye" | "eus" | "cat" | "dan" | "nld" | "eng" | "fin" | "fra" | "deu" | "ell" | "hin" | "hun" | "ind" | "gle" | "ita" | "nor" | "por" | "ron" | "rus" | "spa" | "swe" | "tur";
@@ -489,13 +489,24 @@ export interface types {
       "Base64Alphabet": std.enc.Base64Alphabet;
     };
   };
-  "default": {
-    "User": $default.User;
-    "Filled_Form": $default.Filled_Form;
-    "Form": $default.Form;
-    "Question": $default.Question;
-    "MultipleChoiceQuestion": $default.MultipleChoiceQuestion;
-    "current_user": $default.current_user;
+  "cfg": {
+    "ConfigObject": cfg.ConfigObject;
+    "AbstractConfig": cfg.AbstractConfig;
+    "AllowBareDDL": cfg.AllowBareDDL;
+    "Auth": cfg.Auth;
+    "AuthMethod": cfg.AuthMethod;
+    "DatabaseConfig": cfg.DatabaseConfig;
+    "BranchConfig": cfg.BranchConfig;
+    "Config": cfg.Config;
+    "ConnectionTransport": cfg.ConnectionTransport;
+    "ExtensionConfig": cfg.ExtensionConfig;
+    "InstanceConfig": cfg.InstanceConfig;
+    "JWT": cfg.JWT;
+    "Password": cfg.Password;
+    "QueryCacheMode": cfg.QueryCacheMode;
+    "SCRAM": cfg.SCRAM;
+    "Trust": cfg.Trust;
+    "mTLS": cfg.mTLS;
   };
   "ext": {
     "auth": {
@@ -530,27 +541,12 @@ export interface types {
       "WebAuthnRegistrationChallenge": ext.auth.WebAuthnRegistrationChallenge;
     };
   };
-  "__default": {
-    "current_user": __default.current_user;
-  };
-  "cfg": {
-    "ConfigObject": cfg.ConfigObject;
-    "AbstractConfig": cfg.AbstractConfig;
-    "AllowBareDDL": cfg.AllowBareDDL;
-    "Auth": cfg.Auth;
-    "AuthMethod": cfg.AuthMethod;
-    "DatabaseConfig": cfg.DatabaseConfig;
-    "BranchConfig": cfg.BranchConfig;
-    "Config": cfg.Config;
-    "ConnectionTransport": cfg.ConnectionTransport;
-    "ExtensionConfig": cfg.ExtensionConfig;
-    "InstanceConfig": cfg.InstanceConfig;
-    "JWT": cfg.JWT;
-    "Password": cfg.Password;
-    "QueryCacheMode": cfg.QueryCacheMode;
-    "SCRAM": cfg.SCRAM;
-    "Trust": cfg.Trust;
-    "mTLS": cfg.mTLS;
+  "default": {
+    "Filled_Form": $default.Filled_Form;
+    "Form": $default.Form;
+    "Question": $default.Question;
+    "MultipleChoiceQuestion": $default.MultipleChoiceQuestion;
+    "User": $default.User;
   };
   "fts": {
     "ElasticLanguage": fts.ElasticLanguage;

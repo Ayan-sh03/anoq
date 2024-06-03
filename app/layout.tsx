@@ -3,6 +3,7 @@ import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import DotPattern from "@/components/DotPattern";
+import Navbar from "@/components/Navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 
@@ -22,8 +23,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-      <DotPattern className="z-[-1]"></DotPattern>
-        <main>{children}</main>
+      <DotPattern className="z-[-1]">
+      </DotPattern>
+        <main>
+          <Navbar/>
+
+          {children}
+
+          
+        
+        </main>
         <Toaster />
       </body>
     </html>

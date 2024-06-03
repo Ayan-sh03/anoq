@@ -114,6 +114,7 @@ const Create = () => {
     }
 
     const form = {
+      author : user?.email,
       title: title,
       description: description,
       questions: question,

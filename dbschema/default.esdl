@@ -13,8 +13,12 @@ module default {
             default:=""
         };
         required slug: str{constraint exclusive};
-        multi question:Question;    
-        multi choiceQuestion:MultipleChoiceQuestion;  
+        multi question:Question {
+            on target delete restrict;
+        };    
+        multi choiceQuestion:MultipleChoiceQuestion {
+            on target delete restrict;
+        };
         required status: str {
         constraint one_of("open", "closed");
         default := "open";
@@ -22,7 +26,9 @@ module default {
     }
 
     type Filled_Form extending ext::auth::Auditable{
-         form : Form;
+         form : Form{
+             on target delete delete source;
+         };
          name : str;
          email :str {constraint exclusive};
          multi question:Question;

@@ -1,6 +1,7 @@
+"use client"
 import Link from "next/link";
 
-const Navbar = async () => {
+const Navbar =  () => {
 
 
   return (

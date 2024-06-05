@@ -1,12 +1,4 @@
 "use client"
-import Link from "next/link";
-import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import {
   DeleteIcon,
   FlipVerticalIcon,
@@ -14,8 +6,16 @@ import {
   LockOpen,
   Trash2Icon,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "./ui/button";
-import { revalidatePath } from "next/cache";
+import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 const FormCard = ({
   title,
@@ -29,6 +29,7 @@ const FormCard = ({
   status: string;
 }) => {
 
+  const router = useRouter();
  async function toggleStatus(slug : string, status:string ) {
       if(status === "closed"){
         await fetch(`http://localhost:3000/api/form/open/${slug}`,{
@@ -41,6 +42,15 @@ const FormCard = ({
         });
       }
   }
+
+  async function deleteForm(slug: string) {
+    await fetch(`http://localhost:3000/api/form/${slug}`, {
+      method: "DELETE",
+    });
+    router.refresh()
+  }
+
+
 
   return (
     <Card className="bg-white dark:bg-gray-950 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
@@ -65,7 +75,7 @@ const FormCard = ({
               <DeleteIcon className="size-5 mr-2 cursor-pointer" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => deleteForm(slug)}>
               <Trash2Icon className="size-5 mr-2 cursor-pointer" />
               Delete
             </DropdownMenuItem>

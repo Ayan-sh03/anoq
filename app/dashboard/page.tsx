@@ -19,6 +19,7 @@ export default async function Page() {
   headers: {
     "X-User-Email": user && user.email ? user.email : "",
   },
+  cache: "no-store",
 });
 
 
@@ -43,7 +44,7 @@ function Dashboard({ data }: { data: Form[] }) {
           </form>
           <Link href="/create"><Button>Create New</Button></Link>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl w-full mx-auto">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl w-full mx-auto" >
           {data.map((form, index) => {
             return (
               <FormCard

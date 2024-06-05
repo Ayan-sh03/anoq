@@ -7,38 +7,33 @@ import { useToast } from "@/components/ui/use-toast";
 import { Trash2 } from "lucide-react";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { redirect } from "next/navigation";
-import Loading from "../Loading";
+import Loading from "@/app/Loading";
 import Link from "next/link";
-import { useAutoAnimate } from '@formkit/auto-animate/react'
-import Navbar from "@/components/Navbar";
 
+import { Form, MultipleChoiceQuestion, Question } from "@/dbschema/interfaces";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
-export interface Field {
-  question_text: string;
-  choices?: string[];
-}
-
-const Create = () => {
-  const [question, setQuestion] = useState<Field[]>([]);
-  const [choiceQuestion, setChoiceQuestion] = useState<Field[]>([]);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+export const Update = ({ data, slug }: { data: Form; slug: string }) => {
+  const [question, setQuestion] = useState<Question[]>(data.question || []);
+  const [choiceQuestion, setChoiceQuestion] = useState<
+    MultipleChoiceQuestion[]
+  >(data.choiceQuestion || []);
+  const [title, setTitle] = useState(data.title || "");
+  const [description, setDescription] = useState(data.description || "");
   const [pending, setPending] = useState(false);
   const toast = useToast();
   const [animationParent] = useAutoAnimate()
 
-  const {isAuthenticated,isLoading , user} = useKindeBrowserClient()
 
-  if (isLoading) return (<Loading/>)
+  const { isAuthenticated, isLoading, user } = useKindeBrowserClient();
 
-  if(isAuthenticated){
+  if (isLoading) return <Loading />;
+
+  if (isAuthenticated) {
     console.log("Logged in user:", user);
+  } else {
+    redirect("/api/auth/login?post_login_redirect_url=/create");
   }
-  else{
-    redirect("/api/auth/login?post_login_redirect_url=/create")
-    
-  }
-
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -116,7 +111,7 @@ const Create = () => {
     }
 
     const form = {
-      author : user?.email,
+      author: user?.email,
       title: title,
       description: description,
       questions: question,
@@ -124,8 +119,8 @@ const Create = () => {
     };
 
     try {
-      const res = await fetch("/api/form", {
-        method: "POST",
+      const res = await fetch(`/api/form/${slug}`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
@@ -133,31 +128,29 @@ const Create = () => {
       });
 
       if (res.ok) {
-        setTitle("");
-        setDescription("");
-        setQuestion([]);
-        setChoiceQuestion([]);
-        const data = await res.json()
+        const data = await res.json();
         
         toast.toast({
           title: "Success",
-          description: data.message ,
+          description: data.message,
           variant: "success",
-          action :(<Link href={`/${data.slug}`}>Visit your form on anoq.com/{data.slug}</Link>)
         });
-
-
-      } else {
+      } 
+      else if (res.status === 429) {
+      toast.toast({
+        title: "Error",
+           description: "Too many requests. Please try again later.",
+           variant: "warning",
+         });
+       }
+      else {
         toast.toast({
           title: "Error",
-          description: "Failed to create form",
+          description: "Failed to Update form",
           variant: "destructive",
         });
       }
       setPending(false);
-
-
-
     } catch (error) {
       toast.toast({
         title: "Error",
@@ -197,9 +190,8 @@ const Create = () => {
       newChoiceQuestion[questionIndex] &&
       newChoiceQuestion[questionIndex].choices
     ) {
-
       //@ts-ignore
-      newChoiceQuestion[questionIndex ].choices[choiceIndex] = e.target.value;
+      newChoiceQuestion[questionIndex].choices[choiceIndex] = e.target.value;
     } else {
       // Handle the case where the question or choices might be undefined
       console.error("Invalid questionIndex or choiceIndex");
@@ -230,8 +222,8 @@ const Create = () => {
 
   const handleChoiceDelete = (questionIndex: number, choiceIndex: number) => {
     const newChoiceQuestions = [...choiceQuestion];
-      //@ts-ignore
-   
+    //@ts-ignore
+
     newChoiceQuestions[questionIndex].choices.splice(choiceIndex, 1);
     setChoiceQuestion(newChoiceQuestions);
   };
@@ -243,132 +235,134 @@ const Create = () => {
   };
 
   return (
-    <>
-        <Navbar/>
-      <div className="h-screen container flex flex-col gap-20 py-10 items-center">
-      <h1 className="text-center text-4xl  text-zinc-600 font-bold " >Create Your Form</h1>
-        <form className="flex flex-col gap-2 max-w-4xl justify-center items-center" onSubmit={handleSubmit}>
-          <label htmlFor="title">Title</label>
-          <Input
-            type="text"
-            id="title"
-            minLength={5}
-            value={title}
-            onChange={handleTitleChange}
-          />
-          <label htmlFor="description">Description</label>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={handleDescriptionChange}
-          />
-          <div className="flex flex-row gap-2">
-            <div className="flex flex-col gap-2 p-2" ref={animationParent}>
-              <label htmlFor="questions">Questions</label>
-              {question.map((q, index) => (
-                <div key={index} className="flex items-center" >
+    <div className="h-screen container flex flex-col gap-20 py-10 items-center">
+      <h1 className="text-center text-4xl  text-zinc-600 font-bold ">
+        Update Your Form
+      </h1>
+
+      <form
+        className="flex flex-col gap-2 max-w-4xl justify-center items-center"
+        onSubmit={handleSubmit}
+      >
+        <label htmlFor="title">Title</label>
+        <Input
+          type="text"
+          id="title"
+          minLength={5}
+          value={title}
+          onChange={handleTitleChange}
+        />
+        <label htmlFor="description">Description</label>
+        <Textarea
+          id="description"
+          value={description}
+          onChange={handleDescriptionChange}
+        />
+
+        <div className="flex flex-row gap-2">
+          <div className="flex flex-col gap-2 p-2" ref={animationParent}>
+            <label htmlFor="questions">Questions</label>
+            {question.map((q, index) => (
+              <div key={index} className="flex items-center">
+                <Input
+                  type="text"
+                  minLength={3}
+                  name="question_text"
+                  placeholder={`Question ${index + 1}`}
+                  value={q.question_text}
+                  onChange={(e) => handleQuestionChange(e, index)}
+                />
+                <button
+                  type="button"
+                  className="ml-2 group"
+                  onClick={() => handleQuestionDelete(index)}
+                >
+                  <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
+              </div>
+            ))}
+            <Button disabled={pending} type="button" onClick={addQuestion}>
+              Add
+            </Button>
+          </div>
+          <div className="flex flex-col gap-2 p-2" ref={animationParent}>
+            <label htmlFor="">Multiple Choice Questions</label>
+            {choiceQuestion.map((q, questionIndex) => (
+              <div
+                key={questionIndex}
+                className={`${
+                  questionIndex > 0 ? " border-t pt-2 border-zinc-500 " : ""
+                }`}
+              >
+                <div className="flex items-center">
                   <Input
                     type="text"
                     minLength={3}
-                    name="question_text"
-                    placeholder={`Question ${index + 1}`}
+                    placeholder={`Question ${questionIndex + 1}`}
                     value={q.question_text}
-                    onChange={(e) => handleQuestionChange(e,index )}
+                    onChange={(e) =>
+                      handleChoiceQuestionTextChange(e, questionIndex)
+                    }
                   />
                   <button
                     type="button"
                     className="ml-2 group"
-                    onClick={() => handleQuestionDelete(index)}
+                    onClick={() => handleChoiceQuestionDelete(questionIndex)}
                   >
                     <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
                   </button>
                 </div>
-              ))}
-              <Button disabled={pending} type="button" onClick={addQuestion}>
-                Add
-              </Button>
-            </div>
-            <div className="flex flex-col gap-2 p-2" ref={animationParent}>
-              <label htmlFor="">Multiple Choice Questions</label>
-              {choiceQuestion.map((q, questionIndex) => (
-                <div
-                  key={questionIndex}
-                  className={`${
-                    questionIndex > 0 ? " border-t pt-2 border-zinc-500 " : ""
-                  }`}
-                >
-                  <div className="flex items-center" >
-                    <Input
-                      type="text"
-                      minLength={3}
-                      placeholder={`Question ${questionIndex + 1}`}
-                      value={q.question_text}
-                      onChange={(e) =>
-                        handleChoiceQuestionTextChange(e, questionIndex)
-                      }
-                    />
-                    <button
-                      type="button"
-                      className="ml-2 group"
-                      onClick={() => handleChoiceQuestionDelete(questionIndex)}
-                    >
-                      <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
-                    </button>
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-4 "  ref={animationParent}>
-                    {q.choices?.map((choice, choiceIndex) => (
-                      <div key={choiceIndex} className="flex items-center">
-                        <Input
-                          type="text"
-                          minLength={1}
-                          placeholder={`Choice ${choiceIndex + 1}`}
-                          value={choice}
-                          onChange={(e) =>
-                            handleChoiceQuestionChange(
-                              e,
-                              questionIndex,
-                              choiceIndex
-                            )
-                          }
-                        />
-                        <button
-                          type="button"
-                          className="ml-2 group"
-                          onClick={() =>
-                            handleChoiceDelete(questionIndex, choiceIndex)
-                          }
-                        >
-                          <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    className="mt-1"
-                    disabled={pending}
-                    type="button"
-                    onClick={() => addChoice(questionIndex)}
-                  >
-                    Add Choice
-                  </Button>
+                <div className="mt-4 grid grid-cols-2 gap-4" ref={animationParent}>
+                  {q.choices?.map((choice, choiceIndex) => (
+                    <div key={choiceIndex} className="flex items-center">
+                      <Input
+                        type="text"
+                        minLength={1}
+                        placeholder={`Choice ${choiceIndex + 1}`}
+                        value={choice}
+                        onChange={(e) =>
+                          handleChoiceQuestionChange(
+                            e,
+                            questionIndex,
+                            choiceIndex
+                          )
+                        }
+                      />
+                      <button
+                        type="button"
+                        className="ml-2 group"
+                        onClick={() =>
+                          handleChoiceDelete(questionIndex, choiceIndex)
+                        }
+                      >
+                        <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              <Button
-                disabled={pending}
-                type="button"
-                onClick={addChoiceQuestion}
-              >
-                Add
-              </Button>
-            </div>
+                <Button
+                  className="mt-1"
+                  disabled={pending}
+                  type="button"
+                  onClick={() => addChoice(questionIndex)}
+                >
+                  Add Choice
+                </Button>
+              </div>
+            ))}
+            <Button
+              disabled={pending}
+              type="button"
+              onClick={addChoiceQuestion}
+            >
+              Add
+            </Button>
           </div>
-          <Button disabled={pending} type="submit">
-            Submit
-          </Button>
-        </form>
-      </div>
-    </>
+        </div>
+        <Button disabled={pending} type="submit">
+          Submit
+        </Button>
+      </form>
+    </div>
   );
 };
-
-export default Create;

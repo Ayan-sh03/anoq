@@ -1,6 +1,7 @@
 import AlreadySubmitted from "@/components/AlreadySubmitted";
 import Closed from "@/components/Closed";
 import FormComponent from "@/components/FormComponent";
+import Navbar from "@/components/Navbar";
 import { notFound } from "next/navigation";
 
 export async function getData(slug: string) {
@@ -41,7 +42,8 @@ async function Page({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div className="h-screen w-full">
+    <div className="min-h-screen w-full ">
+      <Navbar/>
       <FormComponent data={data} slug={params.slug} />
     </div>
   );

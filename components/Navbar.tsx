@@ -5,7 +5,7 @@ const Navbar =  () => {
 
 
   return (
-    <nav className="flex container w-full p-6 items-center border-none">
+    <nav className="flex container bg-transparent w-full p-6 items-center border-none ">
         <span className="font-bold mr-auto text-black">
           <Link href={"/"}>Anoq</Link>
         </span>

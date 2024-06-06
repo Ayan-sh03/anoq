@@ -35,7 +35,7 @@ export  async function POST(req,res ){
         const choiceQuestions = e.for(e.json_array_unpack(params.choiceItems), (item) => {
           return e.insert(e.MultipleChoiceQuestion, {
             question_text:e.cast(e.str, item['question_text']),
-            choices: e.array_unpack(e.cast(e.array(e.str), item['choices'])),   
+            choices: e.array_unpack(e.cast(e.array(e.json), item['choices'])),   
           });
         });
         const questions = e.for(e.json_array_unpack(params.items), (item) => {

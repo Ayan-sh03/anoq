@@ -10,8 +10,8 @@ const query = e.params({ items: e.json, choiceItems:e.json ,slug:e.str , userIp:
   const choiceQuestions = e.for(e.json_array_unpack(params.choiceItems), (item) => {
     return e.insert(e.MultipleChoiceQuestion, {
       question_text:e.cast(e.str, item['question_text']),
-      choices: e.array_unpack(e.cast(e.array(e.str), item['choices'])),   
-      selectedChoice:e.cast(e.str , item['selectedChoice'])
+      choices: e.array_unpack(e.cast(e.array(e.json), item['choices'])),   
+      selectedChoice:e.cast(e.json, item['selectedChoice'])
     });
   });
   const questions = e.for(e.json_array_unpack(params.items), (item) => {

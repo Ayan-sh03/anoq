@@ -186,11 +186,11 @@ const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
 
   return (
     <div
-      className={`container ${poppins.className} py-3 xl:px-16 max-h-screen`}
+      className={`container ${poppins.className} py-3 xl:px-16 max-h-screen overflow-scroll`}
     >
       {data.map((form: Form, index: number) => (
         <form key={index} method="post" onSubmit={handleSubmit}>
-          <h1 className="text-3xl text-balance md:text-5xl font-semibold text-center mt-3">
+          <h1 className="text-3xl text-balance md:text-5xl my-3 font-semibold text-center ">
             {form.title}
           </h1>
           <p className="text-xl  ">{form.description}</p>

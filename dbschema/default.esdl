@@ -34,6 +34,7 @@ module default {
          multi question:Question;
          multi choiceQuestion:MultipleChoiceQuestion;
          userIp : str;    
+         
     }
 
      type Question{
@@ -41,8 +42,8 @@ module default {
         answer:str;
     }
     type  MultipleChoiceQuestion extending Question{
-        multi choices:str;
-        multi selectedChoice : str;
+        multi choices:json;
+        multi selectedChoice : json;
     }
 
 }

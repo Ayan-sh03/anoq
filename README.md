@@ -15,4 +15,11 @@ Use our AI form creator to generate your feedback form within minutes using just
 6. **Cohere-AI API**
 
 # Getting Started 
-- You would need EdgeDB installed locally or a cloud 
+- You would need EdgeDB installed locally or a cloud
+- Clone the repo
+- ``` npm install ```
+- Connect to instance
+  ``` edgedb -I <instance-name> ```
+- generate edge-ql js
+  ``` npx @edgedb/generate edgeql-js   ```
+- ``` npm run dev ```

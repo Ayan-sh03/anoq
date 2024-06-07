@@ -16,6 +16,7 @@ export default function CreateAI() {
     productHuntLink: "",
     description: "",
   });
+  const [pending, setPending] = useState(false);
   const toast = useToast();
   const { isAuthenticated, isLoading, user } = useKindeBrowserClient();
 
@@ -34,7 +35,7 @@ export default function CreateAI() {
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
+    setPending(true);
     if (!form.productHuntLink && !form.description) {
       toast.toast({
         title: "Error",
@@ -54,7 +55,7 @@ export default function CreateAI() {
       headers: {
         "Content-Type": "application/json",
       },
-      body:body,
+      body: body,
     });
     const data = await res.json();
     if (!res.ok) {
@@ -68,9 +69,15 @@ export default function CreateAI() {
     toast.toast({
       title: "Success",
       description: "Form created successfully.",
-      action :(<Link href={`/${data.slug}`}>Visit your form on anoq.com/{data.slug}</Link>),
+      action: (
+        <Link href={`/${data.slug}`}>
+          Visit your form on anoq.com/{data.slug}
+        </Link>
+      ),
       variant: "success",
     });
+
+    setPending(false);
   }
   return (
     <div className="overflow-hidden h-screen">
@@ -99,6 +106,7 @@ export default function CreateAI() {
                   <Textarea
                     id="product-description"
                     name="description"
+                    disabled={pending}
                     value={form.description}
                     onChange={handleChange}
                     rows={3}
@@ -119,6 +127,7 @@ export default function CreateAI() {
                     value={form.productHuntLink}
                     name="productHuntLink"
                     onChange={handleChange}
+                    disabled={pending}
                     type="url"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 sm:text-sm"
                     placeholder="https://www.producthunt.com/posts/your-product"
@@ -126,7 +135,9 @@ export default function CreateAI() {
                 </div>
               </div>
               <div className="flex justify-center mt-4">
-                <Button type="submit">Generate Feedback Form</Button>
+                <Button type="submit" disabled={pending}>
+                  Generate Feedback Form
+                </Button>
               </div>
             </form>
           </div>

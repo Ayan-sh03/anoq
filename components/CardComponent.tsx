@@ -14,11 +14,6 @@ interface CardProps{
 
 export async function CardComponent(card: CardProps) {
 
-
-    console.log('====================================');
-    console.log(JSON.stringify(card, null, 2));
-    console.log('====================================');
-
     return <Card className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-transform duration-300 ease-in-out hover:-translate-y-2">
         <div className="absolute inset-0 bg-gradient-to-br from-[#9333ea] to-[#3b82f6] opacity-10 blur-3xl" />
         <CardContent className="space-y-4 relative z-10">

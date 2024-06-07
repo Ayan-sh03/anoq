@@ -110,6 +110,7 @@ export default function CreateAI() {
                     value={form.description}
                     onChange={handleChange}
                     rows={3}
+                    
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 sm:text-sm"
                     placeholder="Describe your product..."
                   />

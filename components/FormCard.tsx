@@ -32,19 +32,19 @@ const FormCard = ({
   const router = useRouter();
  async function toggleStatus(slug : string, status:string ) {
       if(status === "closed"){
-        await fetch(`http://localhost:3000/api/form/open/${slug}`,{
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/form/open/${slug}`,{
           method :"PATCH"
         });
       }
       else{
-        await fetch(`http://localhost:3000/api/form/close/${slug}`,{
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/form/close/${slug}`,{
           method :"PATCH"
         });
       }
   }
 
   async function deleteForm(slug: string) {
-    await fetch(`http://localhost:3000/api/form/${slug}`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/form/${slug}`, {
       method: "DELETE",
     });
     router.refresh()

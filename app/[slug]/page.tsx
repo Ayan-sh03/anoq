@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import { notFound } from "next/navigation";
 
 export async function getData(slug: string) {
-  const response = await fetch(`http://localhost:3000/api/form/${slug}`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/form/${slug}`, {
     cache: "no-store",
   });
   const data = await response.json();
@@ -16,7 +16,7 @@ export async function getData(slug: string) {
 }
 
 async function checkFilled(id: string) {
-  const response = await fetch(`http://localhost:3000/api/submitted/${id}`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/submitted/${id}`, {
     cache: "no-store",
   });
 

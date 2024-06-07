@@ -14,7 +14,7 @@ export default async function Page() {
     redirect("/api/auth/login?postLoginRedirectUrl=/dashboard");
   }
 
- const forms = await fetch(`http://localhost:3000/api/dashboard`, {
+ const forms = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dashboard`, {
   method: "GET",
   headers: {
     "X-User-Email": user && user.email ? user.email : "",

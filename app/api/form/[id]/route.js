@@ -56,15 +56,11 @@ export async function PATCH(req, { params }, res) {
   }
   const slug = params.id;
 
-  console.log('====================================');
-  console.log(params);
-  console.log('====================================');
+
 
   const { title, description, questions, choiceQuestions } = await req.json();
 
-  console.log('====================================');
-  console.log(JSON.stringify({ title, description, questions, choiceQuestions,slug }, null, 2));
-  console.log('====================================');
+ 
 
   const client = createClient();
   try {

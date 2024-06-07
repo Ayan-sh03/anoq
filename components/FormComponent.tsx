@@ -148,7 +148,7 @@ const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
         choiceQuestion: choiceQuestionValues,
       };
 
-      const res = await fetch("http://localhost:3000/api/response", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/response`, {
         method: "POST",
         body: JSON.stringify(formData),
       });

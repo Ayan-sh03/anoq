@@ -15,7 +15,7 @@ export default async function Submission({
   params: { slug: string };
 }) {
   const slug = params.slug;
-  const res = await fetch(`http://localhost:3000/api/form/submissions/${slug}`);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/form/submissions/${slug}`);
 
   const { data } = await res.json();
 

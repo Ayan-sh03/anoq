@@ -50,7 +50,7 @@ export async function POST(req, res) {
     console.log(JSON.stringify(body, null, 2));
     console.log('====================================');
 
-    const res = await fetch("http://localhost:3000/api/form", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/form`, {
       method: "POST",
       body: JSON.stringify(body),
     })

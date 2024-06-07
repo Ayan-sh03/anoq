@@ -37,3 +37,4 @@ next-env.d.ts
 dbschema/edgeql-js
 dbschema/migrations
 Todo.md
+.vercel

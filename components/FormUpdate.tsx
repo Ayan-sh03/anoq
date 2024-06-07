@@ -1,14 +1,13 @@
 "use client";
+import Loading from "@/app/Loading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Trash2 } from "lucide-react";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { Trash2 } from "lucide-react";
 import { redirect } from "next/navigation";
-import Loading from "@/app/Loading";
-import Link from "next/link";
+import { useState } from "react";
 
 import { Form, MultipleChoiceQuestion, Question } from "@/dbschema/interfaces";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
@@ -201,10 +200,12 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
   };
 
   const addQuestion = () => {
+    //@ts-ignore
     setQuestion([...question, { question_text: "" }]);
-  };
-
-  const addChoiceQuestion = () => {
+    };
+    
+    const addChoiceQuestion = () => {
+    //@ts-ignore
     setChoiceQuestion([...choiceQuestion, { question_text: "", choices: [] }]);
   };
 

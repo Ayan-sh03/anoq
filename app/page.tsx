@@ -1,24 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { checkUserExists, syncUserToDatabase } from "@/lib/user";
 import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { KindeUser } from "@kinde-oss/kinde-auth-nextjs/types";
-import { Client, createClient } from "edgedb";
+import { Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export default async function Home() {
-  const { isAuthenticated, getUser } = getKindeServerSession();
-  const user = await getUser();
+  const { isAuthenticated } = getKindeServerSession();
   const authenticated = await isAuthenticated();
-  const client = createClient();
-
-  if (authenticated) {
-    const existingUser = await checkUserExists(client, user?.email as string);
-
-    if (!existingUser) {
-      await syncUserToDatabase(client, user);
-    }
-  }
+  
 
   return (
     <div className="container mx-auto p-4 h-screen w-full text-grey-600 bg-transparent z-10 ">
@@ -58,6 +47,12 @@ export default async function Home() {
                     href="/create"
                   >
                     Get Started
+                  </Link>
+                  <Link
+                    className="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
+                    href="/create/ai"
+                  >
+                    <span className="mr-2">Get Started with AI</span> <Sparkles className="size-5" />
                   </Link>
                 </div>
               </div>

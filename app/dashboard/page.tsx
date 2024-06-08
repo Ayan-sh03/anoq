@@ -9,10 +9,12 @@ import { notFound, redirect } from "next/navigation";
 export default async function Page() {
   const { getUser, isAuthenticated } = getKindeServerSession();
 
+
   const user = await getUser();
   if (!(await isAuthenticated())) {
     redirect("/api/auth/login?postLoginRedirectUrl=/dashboard");
   }
+
 
  const forms = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dashboard`, {
   method: "GET",

@@ -1,15 +1,15 @@
 "use client";
+import Loading from "@/app/Loading";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChangeEvent, FormEvent, useState } from "react";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import Loading from "@/app/Loading";
-import Link from "next/link";
 
 export default function CreateAI() {
   const [form, setForm] = useState({
@@ -20,12 +20,12 @@ export default function CreateAI() {
   const toast = useToast();
   const { isAuthenticated, isLoading, user } = useKindeBrowserClient();
 
+
   if (isLoading) return <Loading />;
 
   if (!isAuthenticated) {
     redirect("/api/auth/login?post_login_redirect_url=/create/ai");
-  }
-
+  } 
   function handleChange(
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
@@ -71,7 +71,7 @@ export default function CreateAI() {
       description: "Form created successfully.",
       action: (
         <Link href={`/${data.slug}`}>
-          Visit your form on anoq.com/{data.slug}
+          Visit your form on {process.env.NEXT_PUBLIC_API_URL}/{data.slug}
         </Link>
       ),
       variant: "success",
@@ -110,7 +110,6 @@ export default function CreateAI() {
                     value={form.description}
                     onChange={handleChange}
                     rows={3}
-                    
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 sm:text-sm"
                     placeholder="Describe your product..."
                   />

@@ -1,16 +1,16 @@
 "use client";
+import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Trash2 } from "lucide-react";
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { redirect } from "next/navigation";
-import Loading from "../Loading";
+import { Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useAutoAnimate } from '@formkit/auto-animate/react'
-import Navbar from "@/components/Navbar";
+import { redirect } from "next/navigation";
+import { useState } from "react";
+import Loading from "../Loading";
 
 
 export interface Field {
@@ -28,14 +28,16 @@ const Create = () => {
   const [animationParent] = useAutoAnimate()
 
   const {isAuthenticated,isLoading , user} = useKindeBrowserClient()
+  
 
   if (isLoading) return (<Loading/>)
 
   if(isAuthenticated){
     console.log("Logged in user:", user);
+    
   }
   else{
-    redirect("/api/auth/login?post_login_redirect_url=/create")
+    redirect("/api/auth/login?post_login_redirect_url=/dashboard")
     
   }
 
@@ -143,7 +145,7 @@ const Create = () => {
           title: "Success",
           description: data.message ,
           variant: "success",
-          action :(<Link href={`/${data.slug}`}>Visit your form on anoq.com/{data.slug}</Link>)
+          action :(<Link href={`/${data.slug}`}>Visit your form on {process.env.NEXT_PUBLIC_API_URL}/{data.slug}</Link>)
         });
 
 

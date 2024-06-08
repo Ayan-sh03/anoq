@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Form } from "@/dbschema/interfaces";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 export default async function Page() {
   const { getUser, isAuthenticated } = getKindeServerSession();
@@ -22,6 +22,9 @@ export default async function Page() {
   cache: "no-store",
 });
 
+  if(!forms.ok) {
+    notFound()
+  }
 
   const { data } = await forms.json();
 

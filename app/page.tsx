@@ -36,6 +36,8 @@ export default async function Home() {
             <Button>Join Now</Button>
           </LoginLink>
         )}
+
+        <Button><Link href={"/dashboard"}>Dashbaord</Link></Button>
       </nav>
 
       <main className=" h-full ">

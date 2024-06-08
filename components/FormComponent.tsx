@@ -94,11 +94,14 @@ const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
     const initialChoiceQuestionValues: ChoiceQuestion[] =
       data[0]?.choiceQuestion.map((question) => ({
         ...question,
+        choices: [...new Set(question.choices)],
         selectedChoice: "",
       })) || [];
 
     setQuestionValues(initialQuestionValues);
     setChoiceQuestionValues(initialChoiceQuestionValues);
+
+
   }, [data]);
 
   const handleQuestionChange = (
@@ -258,6 +261,7 @@ const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
                     type="checkbox"
                     className="size-5"
                     disabled={isLoading}
+                    key={`checkbox_${choiceIndex}`}
                     id={`choicequestion_${cIndex}_choice_${choiceIndex}`}
                     name={`choicequestion_${cIndex}`}
                     value={choice}

@@ -73,7 +73,7 @@ const FormCard = ({
           <DropdownMenuContent align="end" className="cursor-pointer">
             <DropdownMenuItem>
               <DeleteIcon className="size-5 mr-2 cursor-pointer" />
-              Edit
+              <Link href={`/update/${slug}`} >Edit</Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => deleteForm(slug)}>
               <Trash2Icon className="size-5 mr-2 cursor-pointer" />

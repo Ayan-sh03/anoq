@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS filled_form_choice_answers;
+DROP TABLE IF EXISTS filled_form_answers;
+DROP TABLE IF EXISTS filled_forms;
+DROP TABLE IF EXISTS form_choice_questions;
+DROP TABLE IF EXISTS form_questions;
+DROP TABLE IF EXISTS multiple_choice_questions;
+DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS forms;
+DROP TABLE IF EXISTS users;

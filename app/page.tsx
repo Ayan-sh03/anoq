@@ -3,64 +3,118 @@ import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default async function Home() {
   const { isAuthenticated } = getKindeServerSession();
   const authenticated = await isAuthenticated();
-  
 
   return (
-    <div className="container mx-auto p-4 h-screen w-full text-grey-600 bg-transparent z-10 ">
-      <nav className="flex w-full items-center border-none">
-        <span className="font-bold mr-auto text-black">
-          <Link href={"/"}>Anoq</Link>
-        </span>
+    <div className="relative min-h-screen bg-gradient-to-b from-indigo-50 via-white to-purple-50 overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-purple-200/30 blur-3xl"></div>
+        <div className="absolute top-1/3 -left-20 w-72 h-72 rounded-full bg-blue-200/30 blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-teal-200/20 blur-3xl"></div>
+      </div>
 
-        {authenticated ? (
-          <LogoutLink postLogoutRedirectURL="/" className="mr-3">
-            <Button>Log Out</Button>
-          </LogoutLink>
-        ) : (
-          <LoginLink postLoginRedirectURL="/" className="mr-3">
-            <Button>Join Now</Button>
-          </LoginLink>
-        )}
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Navigation Bar */}
+        <nav className="py-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="relative w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">A</div>
+            <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 text-xl">Anoq</span>
+          </Link>
 
-        <Button><Link href={"/dashboard"}>Dashbaord</Link></Button>
-      </nav>
+          <div className="flex items-center gap-3">
+            {authenticated ? (
+              <>
+                <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dashboard</Link>
+                <LogoutLink postLogoutRedirectURL="/">
+                  <Button variant="ghost" className="rounded-full px-5 text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition">Log Out</Button>
+                </LogoutLink>
+              </>
+            ) : (
+              <>
+                <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dashboard</Link>
+                <LoginLink postLoginRedirectURL="/">
+                  <Button className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-5 shadow-md hover:shadow-lg transition-all duration-300">Join Now</Button>
+                </LoginLink>
+              </>
+            )}
+          </div>
+        </nav>
 
-      <main className=" h-full ">
-        <section className="w-full py-12 md:py-24 m-auto lg:py-32 ">
-          <div className="container px-4 md:px-6 space-y-10 xl:space-y-16 w-full">
-            <div className=" max-w-[1300px] mx-auto gap-4 px-4 sm:px-6 md:px-10 w-full  md:gap-16 text-center">
-              <div className="w-full flex flex-col gap-5 md:gap-3">
-                <h1 className="lg:leading-tighter text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl xl:text-[3.4rem] 2xl:text-[3.75rem]">
-                  Empower your Products with anonymous feedback
-                </h1>
-                <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                  Anoq is an anonymous feedback and query platform that helps
-                  User communicate openly and improve continuously.
-                </p>
-                <div className="mt-6 space-x-4">
-                  <Link
-                    className="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                    href="/create"
-                  >
+        {/* Hero Section */}
+        <main className="pt-12 pb-24">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col items-center text-center">
+
+
+              {/* Main heading with gradient text */}
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 max-w-4xl leading-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600">
+                  Empower your Products with
+                </span>
+                <br />
+                <span className="relative">
+                  <span className="text-gray-800">anonymous feedback</span>
+                  <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 400 30" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 26c32.14-10.91 79.1-18.19 139.8-6.54 82.93 15.94 119.18-7.99 237.89-14.57"
+                      stroke="url(#gradient)" strokeWidth="8" strokeLinecap="round" fill="none"/>
+                    <defs>
+                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#818cf8" />
+                        <stop offset="100%" stopColor="#c084fc" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+              </h1>
+
+              {/* Subheading */}
+              <p className="text-lg md:text-xl text-gray-600 max-w-3xl mb-10">
+                Anoq helps teams build better products through honest, anonymous feedback. Uncover insights your users are too shy to share directly.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 mt-6">
+                <Link href="/create">
+                  <Button className="min-w-[180px] h-12 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 font-medium shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all duration-300">
                     Get Started
-                  </Link>
-                  <Link
-                    className="inline-flex h-9 mt-3 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                    href="/create/ai"
-                  >
-                    <span className="mr-2">Get Started with AI</span> <Sparkles className="size-5" />
-                  </Link>
+                  </Button>
+                </Link>
+                <Link href="/create/ai">
+                  <Button variant="outline" className="min-w-[220px] h-12 rounded-full border-2 border-indigo-200 text-indigo-700 px-6 font-medium bg-white/90 hover:bg-indigo-50 hover:border-indigo-300 shadow-md hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300">
+                    <span className="mr-2">AI-Powered Insights</span>
+                    <Sparkles className="size-4 text-yellow-500" />
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Mockup Preview */}
+              <div className="mt-20 w-full max-w-5xl mx-auto relative">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white z-10"></div>
+                <div className="relative z-0 rounded-xl overflow-hidden shadow-2xl border border-gray-200">
+                  <div className="bg-gradient-to-r from-indigo-600/5 to-purple-600/5 p-1">
+                    <div className="bg-white rounded-t-lg p-2 flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                    </div>
+                    <div className="h-[300px] bg-white">
+                      {/* This is where you could add a screenshot/mockup of your product */}
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        Product Dashboard Preview
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </section>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
-

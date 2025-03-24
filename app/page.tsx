@@ -66,10 +66,11 @@ export default async function Home() {
                 </Button>
               </Link>
               <Link href="/create/ai">
-                <Button variant="outline" className="px-8 py-5 text-lg border-white/30 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm flex items-center gap-2 group">
+                <Button variant="outline" className="px-8 py-5 text-lg border-white/30 text-purple-300 hover:bg-white/10 hover:text-white backdrop-blur-sm flex items-center gap-2 group">
                   <Sparkles className="w-5 h-5 group-hover:animate-pulse" />
                   AI-Powered Setup
                 </Button>
+
               </Link>
             </div>
           </div>
@@ -78,7 +79,7 @@ export default async function Home() {
         <div className="absolute top-20 right-20 w-16 h-16 rounded-full bg-purple-500/30 blur-xl animate-float"></div>
         <div className="absolute bottom-40 left-20 w-24 h-24 rounded-full bg-pink-500/30 blur-xl animate-float-delay"></div>
       </div>
-        <FeaturesPage></FeaturesPage>
+      <FeaturesPage></FeaturesPage>
     </>
   );
 }

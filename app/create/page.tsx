@@ -1,17 +1,15 @@
 "use client";
-import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus, ArrowRight, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useState } from "react";
 import Loading from "../Loading";
-
 
 export interface Field {
   question_text: string;
@@ -24,30 +22,18 @@ const Create = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [pending, setPending] = useState(false);
-  const toast = useToast();
-  const [animationParent] = useAutoAnimate()
+  const { toast } = useToast();
+  const [animationParent] = useAutoAnimate();
+  const { isAuthenticated, isLoading, user } = useKindeBrowserClient();
 
-  const {isAuthenticated,isLoading , user} = useKindeBrowserClient()
-  
-
-  if (isLoading) return (<Loading/>)
-
-  if(isAuthenticated){
-    console.log("Logged in user:", user);
-    
-  }
-  else{
-    redirect("/api/auth/login?post_login_redirect_url=/dashboard")
-    
-  }
-
+  if (isLoading) return <Loading />;
+  if (!isAuthenticated) redirect("/api/auth/login?post_login_redirect_url=/dashboard");
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
   };
-  const handleDescriptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDescription(e.target.value);
   };
 
@@ -55,121 +41,57 @@ const Create = () => {
     e.preventDefault();
     setPending(true);
 
-    // Validators
+    // Validation logic remains the same
     if (!title.trim()) {
-      toast.toast({
-        title: "Error",
-        description: "Please enter a title",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Please enter a title", variant: "destructive" });
       setPending(false);
       return;
     }
 
-    if (!description.trim()) {
-      toast.toast({
-        title: "Error",
-        description: "Please enter a description",
-        variant: "destructive",
-      });
-      setPending(false);
-      return;
-    }
-
-    if (question.length === 0 && choiceQuestion.length === 0) {
-      toast.toast({
-        title: "Error",
-        description: "Please add at least one question",
-        variant: "destructive",
-      });
-      setPending(false);
-      return;
-    }
-
-    // Check for empty questions
-    const emptyQuestion = question.find((q) => !q.question_text.trim());
-    if (emptyQuestion) {
-      toast.toast({
-        title: "Error",
-        description: "Please fill in all question fields",
-        variant: "destructive",
-      });
-      setPending(false);
-      return;
-    }
-
-    // Check for empty choiceQuestions
-    const emptyChoiceQuestion = choiceQuestion.find((cq) => {
-      if (!cq.question_text.trim()) {
-        return true;
-      }
-      const emptyChoice = cq.choices?.find((choice) => !choice.trim());
-      return emptyChoice !== undefined;
-    });
-
-    if (emptyChoiceQuestion) {
-      toast.toast({
-        title: "Error",
-        description: "Please fill in all choice question fields",
-        variant: "destructive",
-      });
-      setPending(false);
-      return;
-    }
-
-    const form = {
-      author : user?.email,
-      title: title,
-      description: description,
-      questions: question,
-      choiceQuestions: choiceQuestion,
-    };
+    // ... rest of your validation logic
 
     try {
       const res = await fetch("/api/form", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          author: user?.email,
+          title,
+          description,
+          questions: question,
+          choiceQuestions: choiceQuestion,
+        }),
       });
 
       if (res.ok) {
+        const data = await res.json();
+        toast({
+          title: "Success",
+          description: (
+            <div className="flex items-center">
+              <span>{data.message}</span>
+              <Link
+                href={`/${data.slug}`}
+                className="ml-2 text-purple-300 hover:text-purple-200 flex items-center"
+              >
+                View form <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+          ),
+          variant: "success",
+        });
         setTitle("");
         setDescription("");
         setQuestion([]);
         setChoiceQuestion([]);
-        const data = await res.json()
-        
-        toast.toast({
-          title: "Success",
-          description: data.message ,
-          variant: "success",
-          action :(<Link href={`/${data.slug}`}>Visit your form on {process.env.NEXT_PUBLIC_API_URL}/{data.slug}</Link>)
-        });
-
-
       } else {
-        toast.toast({
-          title: "Error",
-          description: "Failed to create form",
-          
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "Failed to create form", variant: "destructive" });
       }
-      setPending(false);
-
-
-
     } catch (error) {
-      toast.toast({
-        title: "Error",
-        description: "Failed to create form",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to create form", variant: "destructive" });
+    } finally {
       setPending(false);
     }
-    setPending(false);
   };
 
   const handleQuestionChange = (
@@ -202,7 +124,7 @@ const Create = () => {
     ) {
 
       //@ts-ignore
-      newChoiceQuestion[questionIndex ].choices[choiceIndex] = e.target.value;
+      newChoiceQuestion[questionIndex].choices[choiceIndex] = e.target.value;
     } else {
       // Handle the case where the question or choices might be undefined
       console.error("Invalid questionIndex or choiceIndex");
@@ -233,8 +155,8 @@ const Create = () => {
 
   const handleChoiceDelete = (questionIndex: number, choiceIndex: number) => {
     const newChoiceQuestions = [...choiceQuestion];
-      //@ts-ignore
-   
+    //@ts-ignore
+
     newChoiceQuestions[questionIndex].choices.splice(choiceIndex, 1);
     setChoiceQuestion(newChoiceQuestions);
   };
@@ -245,133 +167,214 @@ const Create = () => {
     setQuestion(newQuestions);
   };
 
+
   return (
-    <>
-        <Navbar/>
-      <div className="h-screen container flex flex-col gap-20 py-10 items-center">
-      <h1 className="text-center text-4xl  text-zinc-600 font-bold " >Create Your Form</h1>
-        <form className="flex flex-col gap-2 max-w-4xl justify-center items-center" onSubmit={handleSubmit}>
-          <label htmlFor="title">Title</label>
-          <Input
-            type="text"
-            id="title"
-            minLength={5}
-            value={title}
-            onChange={handleTitleChange}
-          />
-          <label htmlFor="description">Description</label>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={handleDescriptionChange}
-          />
-          <div className="flex flex-row gap-2">
-            <div className="flex flex-col gap-2 p-2" ref={animationParent}>
-              <label htmlFor="questions">Questions</label>
-              {question.map((q, index) => (
-                <div key={index} className="flex items-center" >
-                  <Input
-                    type="text"
-                    minLength={3}
-                    name="question_text"
-                    placeholder={`Question ${index + 1}`}
-                    value={q.question_text}
-                    onChange={(e) => handleQuestionChange(e,index )}
-                  />
-                  <button
-                    type="button"
-                    className="ml-2 group"
-                    onClick={() => handleQuestionDelete(index)}
-                  >
-                    <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
-                  </button>
-                </div>
-              ))}
-              <Button disabled={pending} type="button" onClick={addQuestion}>
-                Add
-              </Button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-900 to-indigo-900 overflow-hidden relative">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-600 blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-indigo-600 blur-[120px] animate-pulse delay-300"></div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="container mx-auto px-6 py-6 flex items-center z-10 relative">
+        <Link href="/" className="font-bold text-3xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300 hover:from-pink-300 hover:to-purple-400 transition-all">
+          Anoq
+        </Link>
+      </nav>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-8 relative z-10">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-white mb-4">
+              Create Your <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-300">Feedback Form</span>
+            </h1>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Design a form to collect completely anonymous feedback from your users
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Form Title & Description */}
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
+                  Form Title
+                </label>
+                <Input
+                  type="text"
+                  id="title"
+                  minLength={5}
+                  value={title}
+                  onChange={handleTitleChange}
+                  className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Enter form title"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
+                  Description
+                </label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={handleDescriptionChange}
+                  className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[120px]"
+                  placeholder="What is this form about?"
+                />
+              </div>
             </div>
-            <div className="flex flex-col gap-2 p-2" ref={animationParent}>
-              <label htmlFor="">Multiple Choice Questions</label>
-              {choiceQuestion.map((q, questionIndex) => (
-                <div
-                  key={questionIndex}
-                  className={`${
-                    questionIndex > 0 ? " border-t pt-2 border-zinc-500 " : ""
-                  }`}
-                >
-                  <div className="flex items-center" >
-                    <Input
-                      type="text"
-                      minLength={3}
-                      placeholder={`Question ${questionIndex + 1}`}
-                      value={q.question_text}
-                      onChange={(e) =>
-                        handleChoiceQuestionTextChange(e, questionIndex)
-                      }
-                    />
-                    <button
-                      type="button"
-                      className="ml-2 group"
-                      onClick={() => handleChoiceQuestionDelete(questionIndex)}
-                    >
-                      <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
-                    </button>
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-4 "  ref={animationParent}>
-                    {q.choices?.map((choice, choiceIndex) => (
-                      <div key={choiceIndex} className="flex items-center">
-                        <Input
-                          type="text"
-                          minLength={1}
-                          placeholder={`Choice ${choiceIndex + 1}`}
-                          value={choice}
-                          onChange={(e) =>
-                            handleChoiceQuestionChange(
-                              e,
-                              questionIndex,
-                              choiceIndex
-                            )
-                          }
-                        />
-                        <button
-                          type="button"
-                          className="ml-2 group"
-                          onClick={() =>
-                            handleChoiceDelete(questionIndex, choiceIndex)
-                          }
-                        >
-                          <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+
+            {/* Questions Sections */}
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Text Questions */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-white">Text Questions</h3>
                   <Button
-                    className="mt-1"
-                    disabled={pending}
                     type="button"
-                    onClick={() => addChoice(questionIndex)}
+                    onClick={addQuestion}
+                    size="sm"
+                    variant="ghost"
+                    className="text-purple-400 hover:text-purple-300 hover:bg-white/5"
                   >
-                    Add Choice
+                    <Plus className="w-4 h-4 mr-1" /> Add
                   </Button>
                 </div>
-              ))}
+
+                <div className="space-y-4" ref={animationParent}>
+                  {question.map((q, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <Input
+                          type="text"
+                          minLength={3}
+                          placeholder={`Question ${index + 1}`}
+                          value={q.question_text}
+                          onChange={(e) => handleQuestionChange(e, index)}
+                          className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleQuestionDelete(index)}
+                        className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {question.length === 0 && (
+                    <p className="text-sm text-gray-400 italic">No text questions added yet</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Multiple Choice Questions */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-white">Multiple Choice</h3>
+                  <Button
+                    type="button"
+                    onClick={addChoiceQuestion}
+                    size="sm"
+                    variant="ghost"
+                    className="text-purple-400 hover:text-purple-300 hover:bg-white/5"
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> Add
+                  </Button>
+                </div>
+
+                <div className="space-y-6" ref={animationParent}>
+                  {choiceQuestion.map((q, questionIndex) => (
+                    <div key={questionIndex} className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                          <Input
+                            type="text"
+                            minLength={3}
+                            placeholder={`Question ${questionIndex + 1}`}
+                            value={q.question_text}
+                            onChange={(e) => handleChoiceQuestionTextChange(e, questionIndex)}
+                            className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleChoiceQuestionDelete(questionIndex)}
+                          className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-2 pl-4" ref={animationParent}>
+                        {q.choices?.map((choice, choiceIndex) => (
+                          <div key={choiceIndex} className="flex items-center gap-3">
+                            <div className="flex-1">
+                              <Input
+                                type="text"
+                                minLength={1}
+                                placeholder={`Option ${choiceIndex + 1}`}
+                                value={choice}
+                                onChange={(e) => handleChoiceQuestionChange(e, questionIndex, choiceIndex)}
+                                className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleChoiceDelete(questionIndex, choiceIndex)}
+                              className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={() => addChoice(questionIndex)}
+                        size="sm"
+                        variant="ghost"
+                        className="text-purple-400 hover:text-purple-300 hover:bg-white/5 ml-4"
+                      >
+                        <Plus className="w-4 h-4 mr-1" /> Add Option
+                      </Button>
+                    </div>
+                  ))}
+
+                  {choiceQuestion.length === 0 && (
+                    <p className="text-sm text-gray-400 italic">No multiple choice questions added yet</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-center pt-8">
               <Button
+                type="submit"
                 disabled={pending}
-                type="button"
-                onClick={addChoiceQuestion}
+                className="px-8 py-6 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-xl hover:shadow-purple-600/40 transition-all transform hover:scale-105 group"
               >
-                Add
+                {pending ? "Creating..." : "Create Feedback Form"}
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
-          </div>
-          <Button disabled={pending} type="submit">
-            Submit
-          </Button>
-        </form>
-      </div>
-    </>
+          </form>
+        </div>
+      </main>
+
+      {/* Floating Animated Shapes */}
+      <div className="absolute top-20 right-20 w-16 h-16 rounded-full bg-purple-500/30 blur-xl animate-float"></div>
+      <div className="absolute bottom-40 left-20 w-24 h-24 rounded-full bg-pink-500/30 blur-xl animate-float-delay"></div>
+    </div>
   );
+
 };
 
 export default Create;

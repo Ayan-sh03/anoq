@@ -6,6 +6,8 @@ import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { poppins } from "@/app/fonts";
 import { toast, useToast } from "./ui/use-toast";
+import { ArrowRight } from "lucide-react";
+import { Checkbox } from "./ui/checkbox";
 
 interface Question {
   question_text: string;
@@ -188,104 +190,136 @@ const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
   };
 
   return (
-    <div
-      className={`container ${poppins.className} py-3 xl:px-16 max-h-screen overflow-scroll`}
-    >
-      {data.map((form: Form, index: number) => (
-        <form key={index} method="post" onSubmit={handleSubmit}>
-          <h1 className="text-3xl text-balance md:text-5xl my-3 font-semibold text-center ">
-            {form.title}
-          </h1>
-          <p className="text-xl  ">{form.description}</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-900 to-indigo-900 overflow-hidden relative">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-600 blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-indigo-600 blur-[120px] animate-pulse delay-300"></div>
+      </div>
 
-          <Label
-            className="text-lg sm:text-md font-semibold first-letter:capitalize"
-            htmlFor="name"
+      {/* Form Container */}
+      <div className="container mx-auto px-6 py-8 relative z-10">
+        {data.map((form: Form, index: number) => (
+          <form
+            key={index}
+            method="post"
+            onSubmit={handleSubmit}
+            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 max-w-3xl mx-auto"
           >
-            Name
-          </Label>
-          <Input
-            type="text"
-            id="name"
-            name="name"
-            disabled={isLoading}
-            placeholder="Your name"
-            onChange={({ target }) => setName(target.value)}
-          />
-
-          <Label
-            className="text-lg sm:text-md font-semibold first-letter:capitalize"
-            htmlFor="email"
-          >
-            Email
-          </Label>
-          <Input
-            type="email"
-            id="email"
-            name="email"
-            disabled={isLoading}
-            placeholder="Your email"
-            onChange={({ target }) => setEmail(target.value)}
-          />
-
-          {form.question.map((question, qIndex) => (
-            <div key={qIndex} className="flex flex-col gap-2 my-3">
-              <Label
-                className="text-lg sm:text-md font-semibold first-letter:capitalize"
-                htmlFor={`question_${qIndex}`}
-              >
-                {question.question_text}
-              </Label>
-              <Input
-                type="text"
-                disabled={isLoading}
-                id={`question_${qIndex}`}
-                name={`question_${qIndex}`}
-                placeholder="Your answer"
-                onChange={(e) => handleQuestionChange(e, qIndex)}
-                value={questionValues[qIndex]?.answer || ""}
-              />
+            {/* Form Header */}
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold text-white mb-2">
+                {form.title}
+              </h1>
+              <p className="text-gray-300 text-lg">{form.description}</p>
             </div>
-          ))}
-          {form.choiceQuestion.map((choiceQuestion, cIndex) => (
-            <div key={cIndex} className="my-3">
-              <Label className="text-lg sm:text-md font-semibold">
-                {choiceQuestion.question_text}
-              </Label>
-              {choiceQuestion.choices.map((choice, choiceIndex) => (
-                <div
-                  key={choiceIndex}
-                  className="flex flex-row gap-2 my-3 items-center "
-                >
-                  <Input
-                    type="checkbox"
-                    className="size-5"
-                    disabled={isLoading}
-                    key={`checkbox_${choiceIndex}`}
-                    id={`choicequestion_${cIndex}_choice_${choiceIndex}`}
-                    name={`choicequestion_${cIndex}`}
-                    value={choice}
-                    onChange={(e) =>
-                      handleChoiceQuestionChange(e, cIndex, choiceIndex)
-                    }
-                    checked={
-                      choiceQuestionValues[cIndex]?.selectedChoice === choice
-                    }
-                  />
-                  <Label
-                    htmlFor={`choicequestion_${cIndex}_choice_${choiceIndex}`}
-                  >
-                    {choice}
+
+            {/* Personal Info */}
+            <div className="space-y-6 mb-8">
+              <div className="space-y-2">
+                <Label className="text-gray-300" htmlFor="name">
+                  Name
+                </Label>
+                <Input
+                  type="text"
+                  id="name"
+                  name="name"
+                  disabled={isLoading}
+                  className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400"
+                  placeholder="Your name"
+                  onChange={({ target }) => setName(target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-gray-300" htmlFor="email">
+                  Email
+                </Label>
+                <Input
+                  type="email"
+                  id="email"
+                  name="email"
+                  disabled={isLoading}
+                  className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400"
+                  placeholder="Your email"
+                  onChange={({ target }) => setEmail(target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Questions */}
+            <div className="space-y-8">
+              {form.question.map((question, qIndex) => (
+                <div key={qIndex} className="space-y-2">
+                  <Label className="text-gray-300" htmlFor={`question_${qIndex}`}>
+                    {question.question_text}
                   </Label>
+                  <Input
+                    type="text"
+                    disabled={isLoading}
+                    id={`question_${qIndex}`}
+                    name={`question_${qIndex}`}
+                    className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400"
+                    placeholder="Your answer"
+                    onChange={(e) => handleQuestionChange(e, qIndex)}
+                    value={questionValues[qIndex]?.answer || ""}
+                  />
+                </div>
+              ))}
+
+              {/* Choice Questions */}
+              {form.choiceQuestion.map((choiceQuestion, cIndex) => (
+                <div key={cIndex} className="space-y-3">
+                  <Label className="text-gray-300">
+                    {choiceQuestion.question_text}
+                  </Label>
+                  <div className="space-y-2 pl-2">
+                    {choiceQuestion.choices.map((choice, choiceIndex) => (
+                      <div key={choiceIndex} className="flex items-center gap-3">
+                        <Checkbox
+                          className="bg-white data-[state=checked]:bg-white"
+                          disabled={isLoading}
+                          id={`choicequestion_${cIndex}_choice_${choiceIndex}`}
+                          onCheckedChange={(checked) => {
+                            handleChoiceQuestionChange(
+                              { target: { checked } } as any,
+                              cIndex,
+                              choiceIndex
+                            );
+                          }}
+                          checked={choiceQuestionValues[cIndex]?.selectedChoice === choice}
+                        />
+                        <Label
+                          htmlFor={`choicequestion_${cIndex}_choice_${choiceIndex}`}
+                          className="text-gray-300"
+                        >
+                          {choice}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
-          ))}
-          <Button disabled={isLoading} type="submit">
-            Submit
-          </Button>
-        </form>
-      ))}
+
+            {/* Submit Button */}
+            <div className="mt-10 flex justify-center">
+              <Button
+                disabled={isLoading}
+                type="submit"
+                className="px-8 py-6 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-xl hover:shadow-purple-600/40 transition-all transform hover:scale-105 group"
+              >
+                {isLoading ? "Submitting..." : "Submit Feedback"}
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </div>
+          </form>
+        ))}
+      </div>
+
+      {/* Floating Animated Shapes */}
+      <div className="absolute top-20 right-20 w-16 h-16 rounded-full bg-purple-500/30 blur-xl animate-float"></div>
+      <div className="absolute bottom-40 left-20 w-24 h-24 rounded-full bg-pink-500/30 blur-xl animate-float-delay"></div>
     </div>
   );
 };

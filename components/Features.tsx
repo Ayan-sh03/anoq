@@ -67,7 +67,7 @@ export default function FeaturesPage() {
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">Secure & Encrypted</h3>
               <p className="text-gray-300">
-                All data is <strong>end-to-end encrypted</strong>, so even we can't read your feedback.
+                All data is <strong>end-to-end encrypted</strong>, so even we can&apos;t read your feedback.
               </p>
             </div>
 

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { GetFormAIDescription, GetFormAIPH } from "./ai_util.mjs";
-import rateLimit from "../../(helper)/ratelimit";
+import rateLimit from "../../(helper)/ratelimit.js";
 import createClient from "edgedb";
+import { GetFormAIDescription, GetFormAIPH } from "./ai_util";
 
-export async function POST(req, res) {
-  const { productHuntLink, description,author } = await req.json();
+export async function POST(req: Request, res: Response) {
+  const { productHuntLink, description, author } = await req.json();
 
   console.log('====================================');
-  console.log(JSON.stringify({ productHuntLink, description,author }, null, 2));
+  console.log(JSON.stringify({ productHuntLink, description, author }, null, 2));
   console.log('====================================');
 
   if (await rateLimit(req, res)) {
@@ -39,11 +39,11 @@ export async function POST(req, res) {
     }
 
     const body = {
-        title: form.title,
-        description: form.description,
-        author: author,
-        questions: form.questions,
-        choiceQuestions: form.multiplechoicequestions
+      title: form.title,
+      description: form.description,
+      author: author,
+      questions: form.questions,
+      choiceQuestions: form.multiplechoicequestions
     }
 
     console.log('====================================');
@@ -63,7 +63,7 @@ export async function POST(req, res) {
 
 
 
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

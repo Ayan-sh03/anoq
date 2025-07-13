@@ -3,11 +3,12 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
@@ -117,42 +118,23 @@ func (db *DB) SelectContext(ctx context.Context, dest interface{}, query string,
 
 // IsUniqueViolation checks if the error is a unique constraint violation
 func IsUniqueViolation(err error) bool {
-	if err == nil {
-		return false
+	var pqErr *pq.Error
+	// Use errors.As to check if the error is a pq.Error and get its code.
+	if errors.As(err, &pqErr) {
+		// PostgreSQL unique violation error code is "23505"
+		return pqErr.Code == "23505"
 	}
-	// PostgreSQL unique violation error code is 23505
-	return contains(err.Error(), "duplicate key value violates unique constraint") ||
-		contains(err.Error(), "23505")
-}
-
-// contains checks if a string contains a substring
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) &&
-		(s == substr ||
-			len(s) > len(substr) &&
-				(s[:len(substr)] == substr ||
-					s[len(s)-len(substr):] == substr ||
-					indexOf(s, substr) >= 0))
-}
-
-// indexOf returns the index of the first occurrence of substr in s, or -1 if not found
-func indexOf(s, substr string) int {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return i
-		}
-	}
-	return -1
+	return false
 }
 
 // IsForeignKeyViolation checks if the error is a foreign key constraint violation
 func IsForeignKeyViolation(err error) bool {
-	if err == nil {
-		return false
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) {
+		// PostgreSQL foreign key violation error code is "23503"
+		return pqErr.Code == "23503"
 	}
-	// PostgreSQL foreign key violation error code is 23503
-	return err.Error() == "pq: insert or update on table violates foreign key constraint" ||
-		err.Error() == "ERROR: insert or update on table violates foreign key constraint"
+	return false
 }
 
 // IsNotFound checks if the error indicates no rows were found

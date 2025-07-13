@@ -311,50 +311,36 @@ func (r *QuestionRepository) CreateQuestionsInBatch(ctx context.Context, questio
 	}
 	defer tx.Rollback()
 
-	// Insert questions
-	for _, question := range questions {
-		query := `
-			INSERT INTO questions (id, form_id, question_text, answer, type, position, required, created_at)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+	// Prepare statements for reuse
+	qStmt, err := tx.PrepareContext(ctx, `
+		INSERT INTO questions (id, form_id, question_text, type, position, required, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)`)
+	if err != nil {
+		return fmt.Errorf("failed to prepare question statement: %w", err)
+	}
+	defer qStmt.Close()
 
-		_, err := tx.ExecContext(ctx, query,
-			question.ID,
-			question.FormID,
-			question.QuestionText,
-			question.Answer,
-			question.Type,
-			question.Position,
-			question.Required,
-			question.CreatedAt,
-		)
+	mcqStmt, err := tx.PrepareContext(ctx, `
+		INSERT INTO multiple_choice_questions (id, question_id, choices, allow_multiple)
+		VALUES ($1, $2, $3, $4)`)
+	if err != nil {
+		return fmt.Errorf("failed to prepare multiple choice question statement: %w", err)
+	}
+	defer mcqStmt.Close()
 
-		if err != nil {
-			return fmt.Errorf("failed to create question %s: %w", question.ID, err)
+	for _, q := range questions {
+		// Use the prepared statements within the transaction
+		if _, err := qStmt.ExecContext(ctx, q.ID, q.FormID, q.QuestionText, q.Type, q.Position, q.Required, q.CreatedAt); err != nil {
+			return fmt.Errorf("failed to execute prepared statement for question %s: %w", q.ID, err)
 		}
 
-		// Handle multiple choice questions
-		if question.Type == model.QuestionTypeMultipleChoice {
-			mcQuery := `
-				INSERT INTO multiple_choice_questions (id, question_id, choices, allow_multiple)
-				VALUES ($1, $2, $3, $4)`
-
-			_, err := tx.ExecContext(ctx, mcQuery,
-				uuid.New(),
-				question.ID,
-				question.Choices,
-				question.AllowMultiple,
-			)
-
-			if err != nil {
-				return fmt.Errorf("failed to create multiple choice question %s: %w", question.ID, err)
+		if q.Type == model.QuestionTypeMultipleChoice {
+			if _, err := mcqStmt.ExecContext(ctx, uuid.New(), q.ID, q.Choices, q.AllowMultiple); err != nil {
+				return fmt.Errorf("failed to execute prepared statement for multiple choice question %s: %w", q.ID, err)
 			}
 		}
 	}
 
-	// Commit transaction
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	return nil
+	// Commit
+	return tx.Commit()
 }

@@ -196,6 +196,16 @@ func (s *FormRepositorySuite) TestUpdateFormStatus_Success() {
 	s.Require().NoError(err)
 }
 
+func (s *FormRepositorySuite) TestUpdateFormStatus_NotFound() {
+	formID := uuid.New()
+	query := `UPDATE forms`
+	s.mock.ExpectExec(query).WithArgs(formID, "closed", sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(0, 0))
+
+	err := s.repo.UpdateFormStatus(context.Background(), formID, "closed")
+	s.Require().Error(err)
+	s.Contains(err.Error(), "form not found")
+}
+
 func (s *FormRepositorySuite) TestGetDashboardStats_Success() {
 	userID := uuid.New()
 
@@ -219,4 +229,27 @@ func (s *FormRepositorySuite) TestGetDashboardStats_Success() {
 	s.Equal(5, stats["totalForms"])
 	s.Equal(120, stats["totalResponses"])
 	s.Equal(3, stats["activeForms"])
+}
+
+func (s *FormRepositorySuite) TestGetDashboardStats_PartialFailure() {
+	userID := uuid.New()
+
+	// Test case 1: Failure on the second query (total responses)
+	s.mock.ExpectQuery(`SELECT COUNT\(\*\) FROM forms WHERE author_id = \$1`).WithArgs(userID).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(5))
+	s.mock.ExpectQuery(`SELECT COUNT\(\*\) FROM filled_forms`).WithArgs(userID).WillReturnError(sql.ErrConnDone)
+	_, err := s.repo.GetDashboardStats(context.Background(), userID)
+	s.Require().Error(err)
+	s.Contains(err.Error(), "failed to get total responses")
+}
+
+func (s *FormRepositorySuite) TestGetDashboardStats_ThirdQueryFailure() {
+	userID := uuid.New()
+
+	// Test case 2: Failure on the third query (active forms)
+	s.mock.ExpectQuery(`SELECT COUNT\(\*\) FROM forms WHERE author_id = \$1`).WithArgs(userID).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(5))
+	s.mock.ExpectQuery(`SELECT COUNT\(\*\) FROM filled_forms`).WithArgs(userID).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(120))
+	s.mock.ExpectQuery(`SELECT COUNT\(\*\) FROM forms WHERE author_id = \$1 AND status = 'open'`).WithArgs(userID).WillReturnError(sql.ErrConnDone)
+	_, err := s.repo.GetDashboardStats(context.Background(), userID)
+	s.Require().Error(err)
+	s.Contains(err.Error(), "failed to get active forms")
 }

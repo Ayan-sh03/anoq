@@ -85,6 +85,42 @@ func (s *QuestionRepositorySuite) TestCreateQuestion_MultipleChoice() {
 	s.Require().NoError(err)
 }
 
+func (s *QuestionRepositorySuite) TestCreateQuestion_MCQError() {
+	q := &model.Question{Type: model.QuestionTypeMultipleChoice}
+
+	s.mock.ExpectExec(`INSERT INTO questions`).WillReturnResult(sqlmock.NewResult(1, 1))
+	s.mock.ExpectExec(`INSERT INTO multiple_choice_questions`).WillReturnError(sql.ErrConnDone)
+
+	err := s.repo.CreateQuestion(context.Background(), q)
+	s.Require().Error(err)
+	s.Contains(err.Error(), "failed to create multiple choice question")
+}
+
+func (s *QuestionRepositorySuite) TestUpdateQuestion_CreateMCQonUpdate() {
+	q := &model.Question{ID: uuid.New(), Type: model.QuestionTypeMultipleChoice}
+
+	// Mock the main update on the questions table
+	s.mock.ExpectExec(`UPDATE questions`).WillReturnResult(sqlmock.NewResult(1, 1))
+	// Mock the check for multiple_choice_questions existence to return 'false'
+	s.mock.ExpectQuery(`SELECT EXISTS`).WithArgs(q.ID).WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+	// Expect an INSERT since it didn't exist
+	s.mock.ExpectExec(`INSERT INTO multiple_choice_questions`).WithArgs(sqlmock.AnyArg(), q.ID, q.Choices, q.AllowMultiple).WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err := s.repo.UpdateQuestion(context.Background(), q)
+	s.Require().NoError(err)
+}
+
+func (s *QuestionRepositorySuite) TestUpdateQuestion_UpdateExistingMCQ() {
+	q := &model.Question{ID: uuid.New(), Type: model.QuestionTypeMultipleChoice}
+
+	s.mock.ExpectExec(`UPDATE questions`).WillReturnResult(sqlmock.NewResult(1, 1))
+	s.mock.ExpectQuery(`SELECT EXISTS`).WithArgs(q.ID).WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
+	s.mock.ExpectExec(`UPDATE multiple_choice_questions`).WithArgs(q.Choices, q.AllowMultiple, q.ID).WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err := s.repo.UpdateQuestion(context.Background(), q)
+	s.Require().NoError(err)
+}
+
 func (s *QuestionRepositorySuite) TestGetQuestionByID_NotFound() {
 	id := uuid.New()
 	query := `SELECT q.id, q.form_id, q.question_text, q.answer, q.type, q.position, q.required, q.created_at, mc.choices, mc.allow_multiple FROM questions q LEFT JOIN multiple_choice_questions mc ON q.id = mc.question_id WHERE q.id = $1`
@@ -105,6 +141,17 @@ func (s *QuestionRepositorySuite) TestDeleteQuestion() {
 
 	err := s.repo.DeleteQuestion(context.Background(), qID)
 	s.Require().NoError(err)
+}
+
+func (s *QuestionRepositorySuite) TestDeleteQuestion_TransactionFailure() {
+	qID := uuid.New()
+
+	s.mock.ExpectBegin()
+	s.mock.ExpectExec(`DELETE FROM multiple_choice_questions`).WillReturnError(sql.ErrConnDone)
+	s.mock.ExpectRollback()
+
+	err := s.repo.DeleteQuestion(context.Background(), qID)
+	s.Require().Error(err)
 }
 
 func (s *QuestionRepositorySuite) TestCreateQuestionsInBatch() {
@@ -138,4 +185,25 @@ func (s *QuestionRepositorySuite) TestCreateQuestionsInBatch() {
 
 	err := s.repo.CreateQuestionsInBatch(context.Background(), questions)
 	s.Require().NoError(err)
+}
+
+func (s *QuestionRepositorySuite) TestCreateQuestionsInBatch_TransactionFailure() {
+	questions := []*model.Question{
+		{ID: uuid.New(), Type: model.QuestionTypeBasic},
+		{ID: uuid.New(), Type: model.QuestionTypeBasic}, // This one will fail
+	}
+
+	s.mock.ExpectBegin()
+	s.mock.ExpectPrepare(`INSERT INTO questions`)
+	s.mock.ExpectPrepare(`INSERT INTO multiple_choice_questions`)
+
+	// First question succeeds
+	s.mock.ExpectExec(`INSERT INTO questions`).WillReturnResult(sqlmock.NewResult(1, 1))
+	// Second question fails
+	s.mock.ExpectExec(`INSERT INTO questions`).WillReturnError(sql.ErrConnDone)
+
+	s.mock.ExpectRollback()
+
+	err := s.repo.CreateQuestionsInBatch(context.Background(), questions)
+	s.Require().Error(err)
 }

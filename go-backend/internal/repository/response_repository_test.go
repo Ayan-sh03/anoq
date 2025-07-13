@@ -124,6 +124,45 @@ func (s *ResponseRepositorySuite) TestGetResponseByID_Success() {
 	s.NotNil(resp.Answers[0].Question)
 }
 
+func (s *ResponseRepositorySuite) TestGetResponseByID_GetAnswersFailure() {
+	responseID := uuid.New()
+	s.mock.ExpectQuery(`SELECT`).WithArgs(responseID).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "form_id", "name", "email", "user_ip", "created_at", "updated_at"}).
+			AddRow(responseID, uuid.New(), nil, nil, nil, time.Now(), time.Now()))
+
+	s.mock.ExpectQuery(`SELECT`).WithArgs(responseID).WillReturnError(sql.ErrConnDone)
+
+	_, err := s.repo.GetResponseByID(context.Background(), responseID)
+	s.Require().Error(err)
+	s.Contains(err.Error(), "failed to get answers")
+}
+
+func (s *ResponseRepositorySuite) TestGetResponsesByFormID_ScanError() {
+	formID := uuid.New()
+	rows := sqlmock.NewRows([]string{"id"}).AddRow("not-a-uuid") // This will cause a scan error
+	s.mock.ExpectQuery(`SELECT id, form_id, name, email, user_ip, created_at, updated_at FROM filled_forms WHERE form_id = \$1`).
+		WithArgs(formID).
+		WillReturnRows(rows)
+
+	_, err := s.repo.GetResponsesByFormID(context.Background(), formID)
+	s.Require().Error(err)
+	s.Contains(err.Error(), "failed to scan response")
+}
+
+func (s *ResponseRepositorySuite) TestUpdateResponse_TransactionFailure() {
+	response := &model.FilledForm{ID: uuid.New()}
+	answers := []model.UpdateAnswerRequest{{ID: new(uuid.UUID), QuestionID: uuid.New()}} // one answer to fail on
+
+	s.mock.ExpectBegin()
+	s.mock.ExpectExec(`UPDATE filled_forms`).WillReturnResult(sqlmock.NewResult(1, 1))
+	s.mock.ExpectExec(`DELETE FROM filled_form_questions`).WillReturnResult(sqlmock.NewResult(1, 1))
+	s.mock.ExpectExec(`INSERT INTO filled_form_questions`).WillReturnError(sql.ErrConnDone)
+	s.mock.ExpectRollback()
+
+	err := s.repo.UpdateResponse(context.Background(), response, answers)
+	s.Require().Error(err)
+}
+
 func (s *ResponseRepositorySuite) TestDeleteResponse_Success() {
 	respID := uuid.New()
 

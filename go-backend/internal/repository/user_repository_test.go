@@ -119,6 +119,15 @@ func (s *UserRepositorySuite) TestCreateUser_UniqueViolation() {
 	s.Contains(err.Error(), "user with email exists@example.com already exists")
 }
 
+func (s *UserRepositorySuite) TestCreateUser_GenericError() {
+	query := `INSERT INTO users`
+	s.mock.ExpectExec(query).WillReturnError(sql.ErrConnDone)
+
+	err := s.repo.CreateUser(context.Background(), &model.User{})
+	s.Require().Error(err)
+	s.Contains(err.Error(), "failed to create user")
+}
+
 func (s *UserRepositorySuite) TestGetUserByEmail_Success() {
 	email := "test@example.com"
 	expectedUser := &model.User{
@@ -137,6 +146,15 @@ func (s *UserRepositorySuite) TestGetUserByEmail_Success() {
 	s.Require().NoError(err)
 	s.Require().NotNil(user)
 	s.Equal(expectedUser.ID, user.ID)
+}
+
+func (s *UserRepositorySuite) TestGetUserByEmail_GenericError() {
+	email := "test@example.com"
+	query := `SELECT id, email, password_hash, username, family_name, given_name, created_at, updated_at FROM users WHERE email = $1`
+	s.mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(email).WillReturnError(sql.ErrConnDone)
+
+	_, err := s.repo.GetUserByEmail(context.Background(), email)
+	s.Require().Error(err)
 }
 
 func (s *UserRepositorySuite) TestUpdateUser_Success() {
@@ -172,6 +190,16 @@ func (s *UserRepositorySuite) TestUpdateUser_NotFound() {
 
 	s.Require().Error(err)
 	s.Contains(err.Error(), "user not found")
+}
+
+func (s *UserRepositorySuite) TestUpdateUser_GenericError() {
+	userToUpdate := &model.User{ID: uuid.New(), UpdatedAt: time.Now()}
+	query := `UPDATE users`
+	s.mock.ExpectExec(query).WillReturnError(sql.ErrConnDone)
+
+	err := s.repo.UpdateUser(context.Background(), userToUpdate)
+	s.Require().Error(err)
+	s.Contains(err.Error(), "failed to update user")
 }
 
 func (s *UserRepositorySuite) TestPasswordHashing() {
@@ -219,6 +247,15 @@ func (s *UserRepositorySuite) TestGetSessionByToken_Success() {
 	s.Equal(expectedSession.ID, session.ID)
 }
 
+func (s *UserRepositorySuite) TestGetSessionByToken_GenericError() {
+	token := "invalid-token"
+	query := `SELECT id, user_id, token, expires_at, created_at, updated_at FROM user_sessions WHERE token = $1 AND expires_at > NOW()`
+	s.mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(token).WillReturnError(sql.ErrConnDone)
+
+	_, err := s.repo.GetSessionByToken(context.Background(), token)
+	s.Require().Error(err)
+}
+
 func (s *UserRepositorySuite) TestDeleteSession_Success() {
 	token := "token-to-delete"
 	query := `DELETE FROM user_sessions WHERE token = $1`
@@ -226,6 +263,15 @@ func (s *UserRepositorySuite) TestDeleteSession_Success() {
 
 	err := s.repo.DeleteSession(context.Background(), token)
 	s.Require().NoError(err)
+}
+
+func (s *UserRepositorySuite) TestDeleteSession_GenericError() {
+	token := "token-to-delete"
+	query := `DELETE FROM user_sessions WHERE token = $1`
+	s.mock.ExpectExec(regexp.QuoteMeta(query)).WithArgs(token).WillReturnError(sql.ErrConnDone)
+
+	err := s.repo.DeleteSession(context.Background(), token)
+	s.Require().Error(err)
 }
 
 func (s *UserRepositorySuite) TestCleanupExpiredSessions() {

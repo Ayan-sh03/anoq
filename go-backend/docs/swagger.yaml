@@ -1,0 +1,1254 @@
+basePath: /
+definitions:
+  model.AnswerResponse:
+    properties:
+      answer:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      question:
+        $ref: '#/definitions/model.QuestionResponse'
+      question_id:
+        type: string
+      selected_choices:
+        items:
+          type: string
+        type: array
+    type: object
+  model.CreateAnswerRequest:
+    description: Request payload for submitting an answer to a question
+    properties:
+      answer:
+        description: Answer text for basic questions
+        example: Very satisfied
+        type: string
+      question_id:
+        description: Question ID being answered (required)
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      selected_choices:
+        description: Selected choices for multiple_choice questions
+        example:
+        - '["Very satisfied"]'
+        items:
+          type: string
+        type: array
+    required:
+    - question_id
+    type: object
+  model.CreateFormRequest:
+    description: Request payload for creating a new form
+    properties:
+      description:
+        description: Form description
+        example: A form to collect customer feedback
+        type: string
+      questions:
+        description: Optional list of questions to create with the form
+        items:
+          $ref: '#/definitions/model.CreateQuestionRequest'
+        type: array
+      slug:
+        description: URL-friendly identifier (required)
+        example: customer-feedback-2023
+        maxLength: 255
+        minLength: 1
+        type: string
+      title:
+        description: Form title (required)
+        example: Customer Feedback Form
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - slug
+    - title
+    type: object
+  model.CreateQuestionRequest:
+    description: Request payload for creating a new question
+    properties:
+      allow_multiple:
+        description: Allow multiple selections for multiple_choice questions
+        example: false
+        type: boolean
+      choices:
+        description: Choices for multiple_choice questions
+        example:
+        - '["Very satisfied"'
+        - ' "Satisfied"'
+        - ' "Neutral"]'
+        items:
+          type: string
+        type: array
+      position:
+        description: Position in form (optional, auto-assigned if not provided)
+        example: 1
+        type: integer
+      question_text:
+        description: Question text (required)
+        example: How satisfied are you with our service?
+        type: string
+      required:
+        description: Whether question is required
+        example: true
+        type: boolean
+      type:
+        allOf:
+        - $ref: '#/definitions/model.QuestionType'
+        description: 'Question type: basic or multiple_choice (required)'
+        example: multiple_choice
+    required:
+    - question_text
+    - type
+    type: object
+  model.CreateResponseRequest:
+    description: Request payload for submitting a form response
+    properties:
+      answers:
+        description: List of answers to form questions (required)
+        items:
+          $ref: '#/definitions/model.CreateAnswerRequest'
+        type: array
+      email:
+        description: Optional respondent email
+        example: john.doe@example.com
+        type: string
+      form_id:
+        description: Form ID to submit response for (required)
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        description: Optional respondent name
+        example: John Doe
+        type: string
+    required:
+    - answers
+    - form_id
+    type: object
+  model.Form:
+    description: Form structure containing all form details
+    properties:
+      author:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: Form author details
+      author_id:
+        description: Form creator's user ID
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      created_at:
+        description: Form creation timestamp
+        example: "2023-01-01T10:00:00Z"
+        type: string
+      description:
+        description: Form description
+        example: A form to collect customer feedback
+        type: string
+      id:
+        description: Form unique identifier
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      modified_at:
+        description: Last modification timestamp
+        example: "2023-01-01T10:00:00Z"
+        type: string
+      questions:
+        description: List of questions in the form
+        items:
+          $ref: '#/definitions/model.Question'
+        type: array
+      slug:
+        description: URL-friendly form identifier
+        example: customer-feedback-2023
+        maxLength: 255
+        minLength: 1
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/model.FormStatus'
+        description: Form status (open/closed)
+        example: open
+      title:
+        description: Form title
+        example: Customer Feedback Form
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - slug
+    - title
+    type: object
+  model.FormResponse:
+    properties:
+      author:
+        $ref: '#/definitions/model.UserResponse'
+      author_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      modified_at:
+        type: string
+      questions:
+        items:
+          $ref: '#/definitions/model.QuestionResponse'
+        type: array
+      slug:
+        type: string
+      status:
+        $ref: '#/definitions/model.FormStatus'
+      title:
+        type: string
+    type: object
+  model.FormStatus:
+    enum:
+    - open
+    - closed
+    type: string
+    x-enum-varnames:
+    - FormStatusOpen
+    - FormStatusClosed
+  model.Question:
+    description: Question structure containing question details and response options
+    properties:
+      allow_multiple:
+        description: Whether multiple selections are allowed
+        example: false
+        type: boolean
+      answer:
+        description: Answer for basic questions
+        example: Very satisfied
+        type: string
+      choices:
+        description: Multiple choice specific fields
+        example:
+        - '["Very satisfied"'
+        - ' "Satisfied"'
+        - ' "Neutral"'
+        - ' "Dissatisfied"'
+        - ' "Very dissatisfied"]'
+        items:
+          type: string
+        type: array
+      created_at:
+        description: Question creation timestamp
+        example: "2023-01-01T10:00:00Z"
+        type: string
+      form_id:
+        description: Associated form ID
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      id:
+        description: Question unique identifier
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      position:
+        description: Question position in form
+        example: 1
+        type: integer
+      question_text:
+        description: Question text content
+        example: How satisfied are you with our service?
+        type: string
+      required:
+        description: Whether question is required
+        example: true
+        type: boolean
+      selected_choice:
+        description: Selected choices
+        example:
+        - '["Very satisfied"]'
+        items:
+          type: string
+        type: array
+      type:
+        allOf:
+        - $ref: '#/definitions/model.QuestionType'
+        description: Question type (basic/multiple_choice)
+        example: multiple_choice
+    required:
+    - question_text
+    type: object
+  model.QuestionResponse:
+    properties:
+      allow_multiple:
+        type: boolean
+      answer:
+        type: string
+      choices:
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      form_id:
+        type: string
+      id:
+        type: string
+      position:
+        type: integer
+      question_text:
+        type: string
+      required:
+        type: boolean
+      selected_choice:
+        items:
+          type: string
+        type: array
+      type:
+        $ref: '#/definitions/model.QuestionType'
+    type: object
+  model.QuestionType:
+    enum:
+    - basic
+    - multiple_choice
+    type: string
+    x-enum-varnames:
+    - QuestionTypeBasic
+    - QuestionTypeMultipleChoice
+  model.ResponseDetailResponse:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/model.AnswerResponse'
+        type: array
+      created_at:
+        type: string
+      email:
+        type: string
+      form:
+        $ref: '#/definitions/model.FormResponse'
+      form_id:
+        type: string
+      id:
+        type: string
+      modified_at:
+        type: string
+      name:
+        type: string
+      user_ip:
+        type: string
+    type: object
+  model.UpdateFormRequest:
+    properties:
+      description:
+        type: string
+      questions:
+        items:
+          $ref: '#/definitions/model.UpdateQuestionRequest'
+        type: array
+      status:
+        $ref: '#/definitions/model.FormStatus'
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
+  model.UpdateQuestionRequest:
+    properties:
+      allow_multiple:
+        type: boolean
+      choices:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      position:
+        type: integer
+      question_text:
+        type: string
+      required:
+        type: boolean
+      type:
+        $ref: '#/definitions/model.QuestionType'
+    type: object
+  model.UpdateUserRequest:
+    description: Request payload for updating user information
+    properties:
+      family_name:
+        description: Update family name
+        example: Doe
+        type: string
+      given_name:
+        description: Update given name
+        example: John
+        type: string
+      username:
+        description: Update username
+        example: johndoe
+        type: string
+    type: object
+  model.User:
+    description: User account information
+    properties:
+      created_at:
+        description: Account creation timestamp
+        example: "2023-01-01T10:00:00Z"
+        type: string
+      email:
+        description: User email address
+        example: user@example.com
+        type: string
+      family_name:
+        description: User's family name
+        example: Doe
+        type: string
+      given_name:
+        description: User's given name
+        example: John
+        type: string
+      id:
+        description: User unique identifier
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      updated_at:
+        description: Last update timestamp
+        example: "2023-01-01T10:00:00Z"
+        type: string
+      username:
+        description: User's chosen username
+        example: johndoe
+        type: string
+    type: object
+  model.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      family_name:
+        type: string
+      given_name:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@anoq.com
+    name: AnoQ Support
+  description: A comprehensive anonymous form builder and response collection system
+  license:
+    name: MIT
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: AnoQ Backend API
+  version: "1.0"
+paths:
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password
+      parameters:
+      - description: User login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            properties:
+              message:
+                type: string
+              token:
+                type: string
+              user:
+                $ref: '#/definitions/model.User'
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Invalid email or password
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Login user
+      tags:
+      - Authentication
+  /api/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidate user session and logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout successful
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+        "400":
+          description: No active session
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Authentication required
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Logout user
+      tags:
+      - Authentication
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with email and password
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            family_name:
+              type: string
+            given_name:
+              type: string
+            password:
+              type: string
+            username:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            properties:
+              message:
+                type: string
+              token:
+                type: string
+              user:
+                $ref: '#/definitions/model.User'
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "409":
+          description: User with this email already exists
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - Authentication
+  /api/form:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of forms created by the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of forms
+          schema:
+            properties:
+              forms:
+                items:
+                  $ref: '#/definitions/model.Form'
+                type: array
+            type: object
+        "401":
+          description: Authentication required
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: List user's forms
+      tags:
+      - Forms
+    post:
+      consumes:
+      - application/json
+      description: Create a new form with title, description, and slug
+      parameters:
+      - description: Form creation data
+        in: body
+        name: form
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateFormRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Form created successfully
+          schema:
+            properties:
+              form:
+                $ref: '#/definitions/model.Form'
+              message:
+                type: string
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Authentication required
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "409":
+          description: Form with this slug already exists
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Create a new form
+      tags:
+      - Forms
+  /api/form/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing form
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Form deleted successfully
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+        "400":
+          description: Invalid form ID
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Authentication required
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Delete a form
+      tags:
+      - Forms
+    put:
+      consumes:
+      - application/json
+      description: Update an existing form's details
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Form update data
+        in: body
+        name: form
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Form updated successfully
+          schema:
+            properties:
+              form:
+                $ref: '#/definitions/model.Form'
+              message:
+                type: string
+            type: object
+        "400":
+          description: Invalid request body or form ID
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Authentication required
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "403":
+          description: 'Access denied: you don''t own this form'
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Update a form
+      tags:
+      - Forms
+  /api/form/{id}/questions:
+    post:
+      consumes:
+      - application/json
+      description: Add a new question to an existing form
+      parameters:
+      - description: Form ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Question data
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateQuestionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Question created successfully
+          schema:
+            properties:
+              message:
+                type: string
+              question:
+                $ref: '#/definitions/model.QuestionResponse'
+            type: object
+        "400":
+          description: Invalid request body or form ID
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Authentication required
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "403":
+          description: 'Access denied: you don''t own this form'
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Create a question for a form
+      tags:
+      - Questions
+  /api/form/slug/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Get a form by its slug identifier (public endpoint)
+      parameters:
+      - description: Form slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Form details
+          schema:
+            properties:
+              form:
+                $ref: '#/definitions/model.Form'
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Get form by slug
+      tags:
+      - Forms
+  /api/questions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get details of a specific question
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Question details
+          schema:
+            properties:
+              question:
+                $ref: '#/definitions/model.QuestionResponse'
+            type: object
+        "400":
+          description: Invalid question ID
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Authentication required
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "403":
+          description: 'Access denied: you don''t own this form'
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Question not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get a question by ID
+      tags:
+      - Questions
+  /api/response:
+    post:
+      consumes:
+      - application/json
+      description: Submit answers to a form (public endpoint)
+      parameters:
+      - description: Form response data
+        in: body
+        name: response
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateResponseRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Response submitted successfully
+          schema:
+            properties:
+              message:
+                type: string
+              response_id:
+                type: string
+            type: object
+        "400":
+          description: Invalid request body or form not accepting responses
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Form not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "429":
+          description: Rate limit exceeded
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Submit a form response
+      tags:
+      - Responses
+  /api/response/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get details of a specific form response
+      parameters:
+      - description: Response ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Response details
+          schema:
+            properties:
+              response:
+                $ref: '#/definitions/model.ResponseDetailResponse'
+            type: object
+        "400":
+          description: Invalid response ID
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Authentication required
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Response not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get a response by ID
+      tags:
+      - Responses
+  /api/user:
+    get:
+      consumes:
+      - application/json
+      description: Get current authenticated user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information
+          schema:
+            properties:
+              user:
+                $ref: '#/definitions/model.User'
+            type: object
+        "401":
+          description: Authentication required
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get current user
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update current authenticated user information
+      parameters:
+      - description: User update data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated successfully
+          schema:
+            properties:
+              message:
+                type: string
+              user:
+                $ref: '#/definitions/model.User'
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Authentication required
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Update current user
+      tags:
+      - User
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Check if the service is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Service is healthy
+          schema:
+            properties:
+              service:
+                type: string
+              status:
+                type: string
+            type: object
+      summary: Health check
+      tags:
+      - Health
+  /ready:
+    get:
+      consumes:
+      - application/json
+      description: Check if the service is ready to receive traffic
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Service is ready
+          schema:
+            properties:
+              service:
+                type: string
+              status:
+                type: string
+            type: object
+        "503":
+          description: Service not ready
+          schema:
+            properties:
+              error:
+                type: string
+              status:
+                type: string
+            type: object
+      summary: Readiness check
+      tags:
+      - Health
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+  SessionToken:
+    description: Session token for authentication
+    in: header
+    name: X-Session-Token
+    type: apiKey
+swagger: "2.0"

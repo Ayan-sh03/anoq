@@ -8,15 +8,15 @@ import (
 
 // FilledForm represents a form submission
 type FilledForm struct {
-	ID         uuid.UUID            `json:"id" db:"id"`
-	FormID     uuid.UUID            `json:"form_id" db:"form_id"`
-	Name       *string              `json:"name,omitempty" db:"name"`
-	Email      *string              `json:"email,omitempty" db:"email"`
-	UserIP     *string              `json:"user_ip,omitempty" db:"user_ip"`
-	CreatedAt  time.Time            `json:"created_at" db:"created_at"`
-	ModifiedAt time.Time            `json:"modified_at" db:"modified_at"`
-	Answers    []FilledFormQuestion `json:"answers,omitempty"`
-	Form       *Form                `json:"form,omitempty"`
+	ID        uuid.UUID            `json:"id" db:"id"`
+	FormID    uuid.UUID            `json:"form_id" db:"form_id"`
+	Name      *string              `json:"name,omitempty" db:"name"`
+	Email     *string              `json:"email,omitempty" db:"email"`
+	UserIP    *string              `json:"user_ip,omitempty" db:"user_ip"`
+	CreatedAt time.Time            `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time            `json:"updated_at" db:"updated_at"`
+	Answers   []FilledFormQuestion `json:"answers,omitempty"`
+	Form      *Form                `json:"form,omitempty"`
 }
 
 // FilledFormQuestion represents an answer to a specific question
@@ -64,25 +64,25 @@ type UpdateAnswerRequest struct {
 
 // ResponseListResponse represents the response payload for response list
 type ResponseListResponse struct {
-	ID         uuid.UUID `json:"id"`
-	FormID     uuid.UUID `json:"form_id"`
-	Name       *string   `json:"name,omitempty"`
-	Email      *string   `json:"email,omitempty"`
-	CreatedAt  time.Time `json:"created_at"`
-	ModifiedAt time.Time `json:"modified_at"`
+	ID        uuid.UUID `json:"id"`
+	FormID    uuid.UUID `json:"form_id"`
+	Name      *string   `json:"name,omitempty"`
+	Email     *string   `json:"email,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // ResponseDetailResponse represents the response payload for detailed response view
 type ResponseDetailResponse struct {
-	ID         uuid.UUID        `json:"id"`
-	FormID     uuid.UUID        `json:"form_id"`
-	Name       *string          `json:"name,omitempty"`
-	Email      *string          `json:"email,omitempty"`
-	UserIP     *string          `json:"user_ip,omitempty"`
-	CreatedAt  time.Time        `json:"created_at"`
-	ModifiedAt time.Time        `json:"modified_at"`
-	Answers    []AnswerResponse `json:"answers"`
-	Form       *FormResponse    `json:"form,omitempty"`
+	ID        uuid.UUID        `json:"id"`
+	FormID    uuid.UUID        `json:"form_id"`
+	Name      *string          `json:"name,omitempty"`
+	Email     *string          `json:"email,omitempty"`
+	UserIP    *string          `json:"user_ip,omitempty"`
+	CreatedAt time.Time        `json:"created_at"`
+	UpdatedAt time.Time        `json:"updated_at"`
+	Answers   []AnswerResponse `json:"answers"`
+	Form      *FormResponse    `json:"form,omitempty"`
 }
 
 // AnswerResponse represents the response payload for answer data
@@ -107,25 +107,25 @@ type FormSubmissionStats struct {
 // ToResponseList converts a FilledForm to ResponseListResponse
 func (f *FilledForm) ToResponseList() *ResponseListResponse {
 	return &ResponseListResponse{
-		ID:         f.ID,
-		FormID:     f.FormID,
-		Name:       f.Name,
-		Email:      f.Email,
-		CreatedAt:  f.CreatedAt,
-		ModifiedAt: f.ModifiedAt,
+		ID:        f.ID,
+		FormID:    f.FormID,
+		Name:      f.Name,
+		Email:     f.Email,
+		CreatedAt: f.CreatedAt,
+		UpdatedAt: f.UpdatedAt,
 	}
 }
 
 // ToDetailResponse converts a FilledForm to ResponseDetailResponse
 func (f *FilledForm) ToDetailResponse() *ResponseDetailResponse {
 	resp := &ResponseDetailResponse{
-		ID:         f.ID,
-		FormID:     f.FormID,
-		Name:       f.Name,
-		Email:      f.Email,
-		UserIP:     f.UserIP,
-		CreatedAt:  f.CreatedAt,
-		ModifiedAt: f.ModifiedAt,
+		ID:        f.ID,
+		FormID:    f.FormID,
+		Name:      f.Name,
+		Email:     f.Email,
+		UserIP:    f.UserIP,
+		CreatedAt: f.CreatedAt,
+		UpdatedAt: f.UpdatedAt,
 	}
 
 	// Convert answers
@@ -154,7 +154,7 @@ func (f *FilledForm) FromCreateRequest(req *CreateResponseRequest, userIP string
 		f.UserIP = &userIP
 	}
 	f.CreatedAt = time.Now()
-	f.ModifiedAt = time.Now()
+	f.UpdatedAt = time.Now()
 }
 
 // UpdateFromRequest updates a FilledForm from UpdateResponseRequest
@@ -165,7 +165,7 @@ func (f *FilledForm) UpdateFromRequest(req *UpdateResponseRequest) {
 	if req.Email != nil {
 		f.Email = req.Email
 	}
-	f.ModifiedAt = time.Now()
+	f.UpdatedAt = time.Now()
 }
 
 // ToResponse converts a FilledFormQuestion to AnswerResponse

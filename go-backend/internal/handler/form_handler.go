@@ -136,7 +136,7 @@ func (h *FormHandler) CreateForm(c *gin.Context) {
 		AuthorID:    userID,
 		Status:      model.FormStatusOpen,
 		CreatedAt:   time.Now(),
-		ModifiedAt:  time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 	//debug
 	fmt.Println("Form: ", form)
@@ -217,7 +217,7 @@ func (h *FormHandler) UpdateForm(c *gin.Context) {
 	if updateReq.Status != "" {
 		form.Status = updateReq.Status
 	}
-	form.ModifiedAt = time.Now()
+	form.UpdatedAt = time.Now()
 
 	// Save updated form
 	if err := h.formRepo.UpdateForm(c.Request.Context(), form); err != nil {

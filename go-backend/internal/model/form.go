@@ -24,7 +24,7 @@ type Form struct {
 	Slug        string     `json:"slug" db:"slug" validate:"required,min=1,max=255" example:"customer-feedback-2023"`   // URL-friendly form identifier
 	Status      FormStatus `json:"status" db:"status" example:"open"`                                                   // Form status (open/closed)
 	CreatedAt   time.Time  `json:"created_at" db:"created_at" example:"2023-01-01T10:00:00Z"`                           // Form creation timestamp
-	ModifiedAt  time.Time  `json:"modified_at" db:"modified_at" example:"2023-01-01T10:00:00Z"`                         // Last modification timestamp
+	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at" example:"2023-01-01T10:00:00Z"`                           // Last modification timestamp
 	Questions   []Question `json:"questions,omitempty"`                                                                 // List of questions in the form
 	Author      *User      `json:"author,omitempty"`                                                                    // Form author details
 }
@@ -55,7 +55,7 @@ type FormResponse struct {
 	Slug        string             `json:"slug"`
 	Status      FormStatus         `json:"status"`
 	CreatedAt   time.Time          `json:"created_at"`
-	ModifiedAt  time.Time          `json:"modified_at"`
+	UpdatedAt   time.Time          `json:"updated_at"`
 	Questions   []QuestionResponse `json:"questions,omitempty"`
 	Author      *UserResponse      `json:"author,omitempty"`
 }
@@ -68,7 +68,7 @@ type FormListResponse struct {
 	Slug            string     `json:"slug"`
 	Status          FormStatus `json:"status"`
 	CreatedAt       time.Time  `json:"created_at"`
-	ModifiedAt      time.Time  `json:"modified_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
 	QuestionCount   int        `json:"question_count"`
 	SubmissionCount int        `json:"submission_count"`
 }
@@ -91,7 +91,7 @@ func (f *Form) ToResponse() *FormResponse {
 		Slug:        f.Slug,
 		Status:      f.Status,
 		CreatedAt:   f.CreatedAt,
-		ModifiedAt:  f.ModifiedAt,
+		UpdatedAt:   f.UpdatedAt,
 	}
 
 	// Convert questions
@@ -119,7 +119,7 @@ func (f *Form) FromCreateRequest(req *CreateFormRequest, authorID uuid.UUID) {
 	f.Slug = req.Slug
 	f.Status = FormStatusOpen
 	f.CreatedAt = time.Now()
-	f.ModifiedAt = time.Now()
+	f.UpdatedAt = time.Now()
 }
 
 // UpdateFromRequest updates a Form from UpdateFormRequest
@@ -133,7 +133,7 @@ func (f *Form) UpdateFromRequest(req *UpdateFormRequest) {
 	if req.Status != nil {
 		f.Status = *req.Status
 	}
-	f.ModifiedAt = time.Now()
+	f.UpdatedAt = time.Now()
 }
 
 // IsOpen returns true if the form is open for submissions

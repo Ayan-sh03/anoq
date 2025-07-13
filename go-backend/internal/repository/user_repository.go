@@ -18,7 +18,7 @@ import (
 // CreateUser creates a new user with password
 func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) error {
 	query := `
-		INSERT INTO users (id, email, password_hash, username, family_name, given_name, created_at, modified_at)
+		INSERT INTO users (id, email, password_hash, username, family_name, given_name, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
 	_, err := r.db.ExecContext(ctx, query,
@@ -29,7 +29,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) error
 		user.FamilyName,
 		user.GivenName,
 		user.CreatedAt,
-		user.ModifiedAt,
+		user.UpdatedAt,
 	)
 
 	if err != nil {
@@ -45,7 +45,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *model.User) error
 // GetUserByID retrieves a user by ID
 func (r *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	query := `
-		SELECT id, email, password_hash, username, family_name, given_name, created_at, modified_at
+		SELECT id, email, password_hash, username, family_name, given_name, created_at, updated_at
 		FROM users
 		WHERE id = $1`
 
@@ -64,7 +64,7 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.
 // GetUserByEmail retrieves a user by email
 func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	query := `
-		SELECT id, email, password_hash, username, family_name, given_name, created_at, modified_at
+		SELECT id, email, password_hash, username, family_name, given_name, created_at, updated_at
 		FROM users
 		WHERE email = $1`
 
@@ -84,7 +84,7 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 func (r *UserRepository) UpdateUser(ctx context.Context, user *model.User) error {
 	query := `
 		UPDATE users
-		SET username = $2, family_name = $3, given_name = $4, modified_at = $5
+		SET username = $2, family_name = $3, given_name = $4, updated_at = $5
 		WHERE id = $1`
 
 	result, err := r.db.ExecContext(ctx, query,
@@ -92,7 +92,7 @@ func (r *UserRepository) UpdateUser(ctx context.Context, user *model.User) error
 		user.Username,
 		user.FamilyName,
 		user.GivenName,
-		user.ModifiedAt,
+		user.UpdatedAt,
 	)
 
 	if err != nil {

@@ -71,7 +71,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		FamilyName:   req.FamilyName,
 		GivenName:    req.GivenName,
 		CreatedAt:    time.Now(),
-		ModifiedAt:   time.Now(),
+		UpdatedAt:    time.Now(),
 	}
 
 	if err := h.userRepo.CreateUser(c.Request.Context(), user); err != nil {
@@ -272,7 +272,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	user.Username = &updateReq.Username
 	user.FamilyName = &updateReq.FamilyName
 	user.GivenName = &updateReq.GivenName
-	user.ModifiedAt = time.Now()
+	user.UpdatedAt = time.Now()
 
 	// Save updated user
 	if err := h.userRepo.UpdateUser(c.Request.Context(), user); err != nil {

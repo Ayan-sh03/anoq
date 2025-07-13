@@ -15,7 +15,7 @@ import (
 // CreateForm creates a new form
 func (r *FormRepository) CreateForm(ctx context.Context, form *model.Form) error {
 	query := `
-		INSERT INTO forms (id, title, description, slug, author_id, status, created_at, modified_at)
+		INSERT INTO forms (id, title, description, slug, author_id, status, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
 	_, err := r.db.ExecContext(ctx, query,
@@ -26,7 +26,7 @@ func (r *FormRepository) CreateForm(ctx context.Context, form *model.Form) error
 		form.AuthorID, //author_id
 		form.Status,
 		form.CreatedAt,
-		form.ModifiedAt,
+		form.UpdatedAt,
 	)
 
 	if err != nil {
@@ -42,7 +42,7 @@ func (r *FormRepository) CreateForm(ctx context.Context, form *model.Form) error
 // GetFormByID retrieves a form by ID
 func (r *FormRepository) GetFormByID(ctx context.Context, id uuid.UUID) (*model.Form, error) {
 	query := `
-		SELECT id, title, description, slug, author_id, status, created_at, modified_at
+		SELECT id, title, description, slug, author_id, status, created_at, updated_at
 		FROM forms
 		WHERE id = $1`
 
@@ -61,7 +61,7 @@ func (r *FormRepository) GetFormByID(ctx context.Context, id uuid.UUID) (*model.
 // GetFormBySlug retrieves a form by slug
 func (r *FormRepository) GetFormBySlug(ctx context.Context, slug string) (*model.Form, error) {
 	query := `
-		SELECT id, title, description, slug, author_id, status, created_at, modified_at
+		SELECT id, title, description, slug, author_id, status, created_at, updated_at
 		FROM forms
 		WHERE slug = $1`
 
@@ -80,7 +80,7 @@ func (r *FormRepository) GetFormBySlug(ctx context.Context, slug string) (*model
 // ListFormsByUserID retrieves all forms for a user
 func (r *FormRepository) ListFormsByUserID(ctx context.Context, userID uuid.UUID) ([]*model.Form, error) {
 	query := `
-		SELECT id, title, description, slug, author_id, status, created_at, modified_at
+		SELECT id, title, description, slug, author_id, status, created_at, updated_at
 		FROM forms
 		WHERE author_id = $1
 		ORDER BY created_at DESC`
@@ -98,7 +98,7 @@ func (r *FormRepository) ListFormsByUserID(ctx context.Context, userID uuid.UUID
 func (r *FormRepository) UpdateForm(ctx context.Context, form *model.Form) error {
 	query := `
 		UPDATE forms
-		SET title = $2, description = $3, status = $4, modified_at = $5
+		SET title = $2, description = $3, status = $4, updated_at = $5
 		WHERE id = $1`
 
 	result, err := r.db.ExecContext(ctx, query,
@@ -106,7 +106,7 @@ func (r *FormRepository) UpdateForm(ctx context.Context, form *model.Form) error
 		form.Title,
 		form.Description,
 		form.Status,
-		form.ModifiedAt,
+		form.UpdatedAt,
 	)
 
 	if err != nil {
@@ -150,7 +150,7 @@ func (r *FormRepository) DeleteForm(ctx context.Context, id uuid.UUID) error {
 func (r *FormRepository) UpdateFormStatus(ctx context.Context, id uuid.UUID, status string) error {
 	query := `
 		UPDATE forms
-		SET status = $2, modified_at = $3
+		SET status = $2, updated_at = $3
 		WHERE id = $1`
 
 	result, err := r.db.ExecContext(ctx, query, id, status, time.Now())

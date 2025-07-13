@@ -21,7 +21,7 @@ func (r *ResponseRepository) CreateResponse(ctx context.Context, response *model
 
 	// Insert filled form
 	query := `
-		INSERT INTO filled_forms (id, form_id, name, email, user_ip, created_at, modified_at)
+		INSERT INTO filled_forms (id, form_id, name, email, user_ip, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
 	_, err = tx.ExecContext(ctx, query,
@@ -31,7 +31,7 @@ func (r *ResponseRepository) CreateResponse(ctx context.Context, response *model
 		response.Email,
 		response.UserIP,
 		response.CreatedAt,
-		response.ModifiedAt,
+		response.UpdatedAt,
 	)
 
 	if err != nil {
@@ -74,7 +74,7 @@ func (r *ResponseRepository) CreateResponse(ctx context.Context, response *model
 // GetResponseByID retrieves a response by ID with all its answers
 func (r *ResponseRepository) GetResponseByID(ctx context.Context, id uuid.UUID) (*model.FilledForm, error) {
 	query := `
-		SELECT id, form_id, name, email, user_ip, created_at, modified_at
+		SELECT id, form_id, name, email, user_ip, created_at, updated_at
 		FROM filled_forms
 		WHERE id = $1`
 
@@ -86,7 +86,7 @@ func (r *ResponseRepository) GetResponseByID(ctx context.Context, id uuid.UUID) 
 		&response.Email,
 		&response.UserIP,
 		&response.CreatedAt,
-		&response.ModifiedAt,
+		&response.UpdatedAt,
 	)
 
 	if err != nil {
@@ -109,7 +109,7 @@ func (r *ResponseRepository) GetResponseByID(ctx context.Context, id uuid.UUID) 
 // GetResponsesByFormID retrieves all responses for a form with their answers
 func (r *ResponseRepository) GetResponsesByFormID(ctx context.Context, formID uuid.UUID) ([]*model.FilledForm, error) {
 	query := `
-		SELECT id, form_id, name, email, user_ip, created_at, modified_at
+		SELECT id, form_id, name, email, user_ip, created_at, updated_at
 		FROM filled_forms
 		WHERE form_id = $1
 		ORDER BY created_at DESC`
@@ -130,7 +130,7 @@ func (r *ResponseRepository) GetResponsesByFormID(ctx context.Context, formID uu
 			&response.Email,
 			&response.UserIP,
 			&response.CreatedAt,
-			&response.ModifiedAt,
+			&response.UpdatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan response: %w", err)
@@ -152,7 +152,7 @@ func (r *ResponseRepository) GetResponsesByFormID(ctx context.Context, formID uu
 // GetResponsesListByFormID retrieves responses for a form without answers (for listing)
 func (r *ResponseRepository) GetResponsesListByFormID(ctx context.Context, formID uuid.UUID) ([]*model.FilledForm, error) {
 	query := `
-		SELECT id, form_id, name, email, user_ip, created_at, modified_at
+		SELECT id, form_id, name, email, user_ip, created_at, updated_at
 		FROM filled_forms
 		WHERE form_id = $1
 		ORDER BY created_at DESC`
@@ -173,7 +173,7 @@ func (r *ResponseRepository) GetResponsesListByFormID(ctx context.Context, formI
 			&response.Email,
 			&response.UserIP,
 			&response.CreatedAt,
-			&response.ModifiedAt,
+			&response.UpdatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan response: %w", err)
@@ -261,13 +261,13 @@ func (r *ResponseRepository) UpdateResponse(ctx context.Context, response *model
 	// Update filled form
 	query := `
 		UPDATE filled_forms 
-		SET name = $1, email = $2, modified_at = $3
+		SET name = $1, email = $2, updated_at = $3
 		WHERE id = $4`
 
 	result, err := tx.ExecContext(ctx, query,
 		response.Name,
 		response.Email,
-		response.ModifiedAt,
+		response.UpdatedAt,
 		response.ID,
 	)
 

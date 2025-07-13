@@ -31,8 +31,3 @@ CREATE INDEX idx_user_sessions_token ON user_sessions(token);
 CREATE INDEX idx_user_sessions_expires_at ON user_sessions(expires_at);
 CREATE INDEX idx_multiple_choice_questions_question_id ON multiple_choice_questions(question_id);
 
--- Add trigger for user_sessions updated_at
-CREATE TRIGGER update_user_sessions_updated_at
-    BEFORE UPDATE ON user_sessions
-    FOR EACH ROW
-    EXECUTE FUNCTION update_modified_at_column(); 

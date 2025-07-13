@@ -190,7 +190,7 @@ func (r *ResponseRepository) getAnswersByFilledFormID(ctx context.Context, fille
 	query := `
 		SELECT ffq.id, ffq.filled_form_id, ffq.question_id, ffq.answer, ffq.selected_choices, ffq.created_at,
 		       q.id, q.form_id, q.question_text, q.answer, q.type, q.position, q.required, q.created_at,
-		       mc.choices, mc.selected_choice, mc.allow_multiple
+		       mc.choices, mc.allow_multiple
 		FROM filled_form_questions ffq
 		INNER JOIN questions q ON ffq.question_id = q.id
 		LEFT JOIN multiple_choice_questions mc ON q.id = mc.question_id
@@ -207,7 +207,7 @@ func (r *ResponseRepository) getAnswersByFilledFormID(ctx context.Context, fille
 	for rows.Next() {
 		var answer model.FilledFormQuestion
 		var question model.Question
-		var choices, selectedChoice sql.NullString
+		var choices sql.NullString
 		var allowMultiple sql.NullBool
 
 		err := rows.Scan(
@@ -226,7 +226,6 @@ func (r *ResponseRepository) getAnswersByFilledFormID(ctx context.Context, fille
 			&question.Required,
 			&question.CreatedAt,
 			&choices,
-			&selectedChoice,
 			&allowMultiple,
 		)
 		if err != nil {
@@ -238,11 +237,6 @@ func (r *ResponseRepository) getAnswersByFilledFormID(ctx context.Context, fille
 			if choices.Valid {
 				if err := question.Choices.Scan([]byte(choices.String)); err != nil {
 					return nil, fmt.Errorf("failed to parse question choices: %w", err)
-				}
-			}
-			if selectedChoice.Valid {
-				if err := question.SelectedChoice.Scan([]byte(selectedChoice.String)); err != nil {
-					return nil, fmt.Errorf("failed to parse question selected choice: %w", err)
 				}
 			}
 			question.AllowMultiple = allowMultiple.Bool

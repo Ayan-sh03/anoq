@@ -44,14 +44,13 @@ func (r *QuestionRepository) CreateQuestion(ctx context.Context, question *model
 // createMultipleChoiceQuestion creates a multiple choice question entry
 func (r *QuestionRepository) createMultipleChoiceQuestion(ctx context.Context, question *model.Question) error {
 	query := `
-		INSERT INTO multiple_choice_questions (id, question_id, choices, selected_choice, allow_multiple)
-		VALUES ($1, $2, $3, $4, $5)`
+		INSERT INTO multiple_choice_questions (id, question_id, choices, allow_multiple)
+		VALUES ($1, $2, $3, $4)`
 
 	_, err := r.db.ExecContext(ctx, query,
 		uuid.New(),
 		question.ID,
 		question.Choices,
-		question.SelectedChoice,
 		question.AllowMultiple,
 	)
 
@@ -62,13 +61,13 @@ func (r *QuestionRepository) createMultipleChoiceQuestion(ctx context.Context, q
 func (r *QuestionRepository) GetQuestionByID(ctx context.Context, questionID uuid.UUID) (*model.Question, error) {
 	query := `
 		SELECT q.id, q.form_id, q.question_text, q.answer, q.type, q.position, q.required, q.created_at,
-		       mc.choices, mc.selected_choice, mc.allow_multiple
+		       mc.choices, mc.allow_multiple
 		FROM questions q
 		LEFT JOIN multiple_choice_questions mc ON q.id = mc.question_id
 		WHERE q.id = $1`
 
 	question := &model.Question{}
-	var choices, selectedChoice sql.NullString
+	var choices sql.NullString
 	var allowMultiple sql.NullBool
 
 	err := r.db.QueryRowContext(ctx, query, questionID).Scan(
@@ -81,7 +80,6 @@ func (r *QuestionRepository) GetQuestionByID(ctx context.Context, questionID uui
 		&question.Required,
 		&question.CreatedAt,
 		&choices,
-		&selectedChoice,
 		&allowMultiple,
 	)
 
@@ -99,11 +97,6 @@ func (r *QuestionRepository) GetQuestionByID(ctx context.Context, questionID uui
 				return nil, fmt.Errorf("failed to parse choices: %w", err)
 			}
 		}
-		if selectedChoice.Valid {
-			if err := question.SelectedChoice.Scan([]byte(selectedChoice.String)); err != nil {
-				return nil, fmt.Errorf("failed to parse selected choice: %w", err)
-			}
-		}
 		question.AllowMultiple = allowMultiple.Bool
 	}
 
@@ -114,7 +107,7 @@ func (r *QuestionRepository) GetQuestionByID(ctx context.Context, questionID uui
 func (r *QuestionRepository) GetQuestionsByFormID(ctx context.Context, formID uuid.UUID) ([]*model.Question, error) {
 	query := `
 		SELECT q.id, q.form_id, q.question_text, q.answer, q.type, q.position, q.required, q.created_at,
-		       mc.choices, mc.selected_choice, mc.allow_multiple
+		       mc.choices, mc.allow_multiple
 		FROM questions q
 		LEFT JOIN multiple_choice_questions mc ON q.id = mc.question_id
 		WHERE q.form_id = $1
@@ -129,7 +122,7 @@ func (r *QuestionRepository) GetQuestionsByFormID(ctx context.Context, formID uu
 	var questions []*model.Question
 	for rows.Next() {
 		question := &model.Question{}
-		var choices, selectedChoice sql.NullString
+		var choices sql.NullString
 		var allowMultiple sql.NullBool
 
 		err := rows.Scan(
@@ -142,7 +135,6 @@ func (r *QuestionRepository) GetQuestionsByFormID(ctx context.Context, formID uu
 			&question.Required,
 			&question.CreatedAt,
 			&choices,
-			&selectedChoice,
 			&allowMultiple,
 		)
 		if err != nil {
@@ -154,11 +146,6 @@ func (r *QuestionRepository) GetQuestionsByFormID(ctx context.Context, formID uu
 			if choices.Valid {
 				if err := question.Choices.Scan([]byte(choices.String)); err != nil {
 					return nil, fmt.Errorf("failed to parse choices: %w", err)
-				}
-			}
-			if selectedChoice.Valid {
-				if err := question.SelectedChoice.Scan([]byte(selectedChoice.String)); err != nil {
-					return nil, fmt.Errorf("failed to parse selected choice: %w", err)
 				}
 			}
 			question.AllowMultiple = allowMultiple.Bool
@@ -223,12 +210,11 @@ func (r *QuestionRepository) updateMultipleChoiceQuestion(ctx context.Context, q
 		// Update existing
 		updateQuery := `
 			UPDATE multiple_choice_questions 
-			SET choices = $1, selected_choice = $2, allow_multiple = $3
-			WHERE question_id = $4`
+			SET choices = $1, allow_multiple = $2
+			WHERE question_id = $3`
 
 		_, err := r.db.ExecContext(ctx, updateQuery,
 			question.Choices,
-			question.SelectedChoice,
 			question.AllowMultiple,
 			question.ID,
 		)
@@ -349,14 +335,13 @@ func (r *QuestionRepository) CreateQuestionsInBatch(ctx context.Context, questio
 		// Handle multiple choice questions
 		if question.Type == model.QuestionTypeMultipleChoice {
 			mcQuery := `
-				INSERT INTO multiple_choice_questions (id, question_id, choices, selected_choice, allow_multiple)
-				VALUES ($1, $2, $3, $4, $5)`
+				INSERT INTO multiple_choice_questions (id, question_id, choices, allow_multiple)
+				VALUES ($1, $2, $3, $4)`
 
 			_, err := tx.ExecContext(ctx, mcQuery,
 				uuid.New(),
 				question.ID,
 				question.Choices,
-				question.SelectedChoice,
 				question.AllowMultiple,
 			)
 

@@ -9,14 +9,14 @@ import (
 // User represents a user in the system
 // @Description User account information
 type User struct {
-	ID           uuid.UUID `json:"id" db:"id" example:"550e8400-e29b-41d4-a716-446655440000"` // User unique identifier
-	Email        string    `json:"email" db:"email" example:"user@example.com"`               // User email address
-	PasswordHash string    `json:"-" db:"password_hash"`                                      // Never expose password hash in JSON
-	Username     *string   `json:"username" db:"username" example:"johndoe"`                  // User's chosen username
-	FamilyName   *string   `json:"family_name" db:"family_name" example:"Doe"`                // User's family name
-	GivenName    *string   `json:"given_name" db:"given_name" example:"John"`                 // User's given name
-	CreatedAt    time.Time `json:"created_at" db:"created_at" example:"2023-01-01T10:00:00Z"` // Account creation timestamp
-	UpdatedAt    time.Time `json:"updated_at" db:"updated_at" example:"2023-01-01T10:00:00Z"` // Last update timestamp
+	ID           uuid.UUID `json:"id" db:"id" example:"550e8400-e29b-41d4-a716-446655440000"`   // User unique identifier
+	Email        string    `json:"email" db:"email" example:"user@example.com"`                 // User email address
+	PasswordHash string    `json:"-" db:"password_hash"`                                        // Never expose password hash in JSON
+	Username     *string   `json:"username" db:"username" example:"johndoe"`                    // User's chosen username
+	FamilyName   *string   `json:"family_name" db:"family_name" example:"Doe"`                  // User's family name
+	GivenName    *string   `json:"given_name" db:"given_name" example:"John"`                   // User's given name
+	CreatedAt    time.Time `json:"created_at" db:"created_at" example:"2023-01-01T10:00:00Z"`   // Account creation timestamp
+	ModifiedAt   time.Time `json:"modified_at" db:"modified_at" example:"2023-01-01T10:00:00Z"` // Last update timestamp
 }
 
 // UserSession represents a user session
@@ -55,7 +55,7 @@ type UserResponse struct {
 	FamilyName *string   `json:"family_name,omitempty"`
 	GivenName  *string   `json:"given_name,omitempty"`
 	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ModifiedAt time.Time `json:"modified_at"`
 }
 
 // ToResponse converts a User to UserResponse
@@ -67,7 +67,7 @@ func (u *User) ToResponse() *UserResponse {
 		FamilyName: u.FamilyName,
 		GivenName:  u.GivenName,
 		CreatedAt:  u.CreatedAt,
-		UpdatedAt:  u.UpdatedAt,
+		ModifiedAt: u.ModifiedAt,
 	}
 }
 
@@ -79,7 +79,7 @@ func (u *User) FromCreateRequest(req *CreateUserRequest) {
 	u.FamilyName = req.FamilyName
 	u.GivenName = req.GivenName
 	u.CreatedAt = time.Now()
-	u.UpdatedAt = time.Now()
+	u.ModifiedAt = time.Now()
 }
 
 // UpdateFromRequest updates a User from UpdateUserRequest
@@ -93,5 +93,5 @@ func (u *User) UpdateFromRequest(req *UpdateUserRequest) {
 	if req.GivenName != nil {
 		u.GivenName = req.GivenName
 	}
-	u.UpdatedAt = time.Now()
+	u.ModifiedAt = time.Now()
 }

@@ -12,7 +12,7 @@ CREATE TABLE users (
     family_name VARCHAR(255),
     given_name VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    modified_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Forms table
@@ -78,27 +78,3 @@ CREATE INDEX idx_filled_forms_form_id ON filled_forms(form_id);
 CREATE INDEX idx_filled_forms_created_at ON filled_forms(created_at);
 CREATE INDEX idx_filled_form_questions_filled_form_id ON filled_form_questions(filled_form_id);
 CREATE INDEX idx_filled_form_questions_question_id ON filled_form_questions(question_id);
-
--- Triggers for updated_at timestamps
-CREATE OR REPLACE FUNCTION update_modified_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.modified_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_users_updated_at
-    BEFORE UPDATE ON users
-    FOR EACH ROW
-    EXECUTE FUNCTION update_modified_at_column();
-
-CREATE TRIGGER update_forms_modified_at
-    BEFORE UPDATE ON forms
-    FOR EACH ROW
-    EXECUTE FUNCTION update_modified_at_column();
-
-CREATE TRIGGER update_filled_forms_modified_at
-    BEFORE UPDATE ON filled_forms
-    FOR EACH ROW
-    EXECUTE FUNCTION update_modified_at_column(); 

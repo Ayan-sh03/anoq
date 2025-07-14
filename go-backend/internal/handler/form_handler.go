@@ -14,12 +14,12 @@ import (
 
 // FormHandler handles form-related HTTP requests
 type FormHandler struct {
-	formRepo     *repository.FormRepository
-	responseRepo *repository.ResponseRepository
+	formRepo     repository.FormRepo
+	responseRepo repository.ResponseRepo
 }
 
 // NewFormHandler creates a new form handler
-func NewFormHandler(formRepo *repository.FormRepository, responseRepo *repository.ResponseRepository) *FormHandler {
+func NewFormHandler(formRepo repository.FormRepo, responseRepo repository.ResponseRepo) *FormHandler {
 	return &FormHandler{
 		formRepo:     formRepo,
 		responseRepo: responseRepo,

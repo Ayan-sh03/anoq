@@ -4,11 +4,7 @@ import rateLimit from "../../(helper)/ratelimit";
 import createClient from "edgedb";
 
 export async function POST(req, res) {
-  const { productHuntLink, description,author } = await req.json();
-
-  console.log('====================================');
-  console.log(JSON.stringify({ productHuntLink, description,author }, null, 2));
-  console.log('====================================');
+  const { productHuntLink, description, author } = await req.json();
 
   if (await rateLimit(req, res)) {
     return new Response(
@@ -39,11 +35,11 @@ export async function POST(req, res) {
     }
 
     const body = {
-        title: form.title,
-        description: form.description,
-        author: author,
-        questions: form.questions,
-        choiceQuestions: form.multiplechoicequestions
+      title: form.title,
+      description: form.description,
+      author: author,
+      questions: form.questions,
+      choiceQuestions: form.multiplechoicequestions
     }
 
     console.log('====================================');

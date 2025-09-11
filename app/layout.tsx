@@ -1,4 +1,3 @@
-import DotPattern from "@/components/DotPattern";
 import { Toaster } from "@/components/ui/toaster";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -18,10 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <DotPattern className=" absolute inset-0 -z-10"/>
-
-          <main className="z-10">{children}</main>
-
+        <main className="z-10">{children}</main>
         <Toaster />
       </body>
     </html>

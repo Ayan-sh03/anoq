@@ -1,19 +1,20 @@
 package database
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"os"
+	"time"
 
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v5"
 )
 
 // NewConnection establishes a connection to the PostgreSQL database
-func NewConnection() (*sql.DB, error) {
+func NewConnection() (*pgx.Conn, error) {
 	host := getEnv("DB_HOST", "localhost")
 	port := getEnv("DB_PORT", "5432")
-	user := getEnv("DB_USER", "postgres")
-	password := getEnv("DB_PASSWORD", "")
+	user := getEnv("DB_USER", "anoq_user")
+	password := getEnv("DB_PASSWORD", "anoq_password")
 	dbname := getEnv("DB_NAME", "anoq")
 
 	connStr := fmt.Sprintf(
@@ -21,15 +22,16 @@ func NewConnection() (*sql.DB, error) {
 		host, port, user, password, dbname,
 	)
 
-	db, err := sql.Open("postgres", connStr)
+	db, err := pgx.Connect(context.Background(), connStr)
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %w", err)
 	}
 
-	if err := db.Ping(); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := db.Ping(ctx); err != nil {
 		return nil, fmt.Errorf("error connecting to the database: %w", err)
 	}
-
 	return db, nil
 }
 

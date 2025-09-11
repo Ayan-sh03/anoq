@@ -1,6 +1,7 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     username VARCHAR(255) UNIQUE,
     family_name VARCHAR(255),
     given_name VARCHAR(255),
@@ -12,7 +13,7 @@ CREATE TABLE forms (
     title VARCHAR(255) NOT NULL,
     description TEXT DEFAULT '',
     slug VARCHAR(255) UNIQUE NOT NULL,
-    author_id INTEGER REFERENCES users(id),
+    author_id INTEGER REFERENCES users(id) ON DELETE RESTRICT,
     status VARCHAR(50) DEFAULT 'open',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -52,13 +53,13 @@ CREATE TABLE filled_forms (
     form_id INTEGER REFERENCES forms(id) ON DELETE CASCADE,
     name VARCHAR(255),
     email VARCHAR(255),
-    user_ip VARCHAR(45),
+    user_ip INET,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE filled_form_answers (
     filled_form_id INTEGER REFERENCES filled_forms(id) ON DELETE CASCADE,
-    question_id INTEGER REFERENCES questions(id),
+    question_id INTEGER REFERENCES questions(id) ON DELETE SET NULL,
     answer TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (filled_form_id, question_id)
@@ -74,14 +75,12 @@ CREATE TABLE filled_form_choice_answers (
 
 -- Triggers for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $
 BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_forms_updated_at
+$ LANGUAGE plpgsql;CREATE TRIGGER update_forms_updated_at
     BEFORE UPDATE ON forms
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();

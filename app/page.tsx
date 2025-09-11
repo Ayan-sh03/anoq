@@ -1,13 +1,38 @@
 import { Button } from "@/components/ui/button";
-import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+// Server component to check authentication
+async function checkAuth() {
+  try {
+    const cookieStore = cookies();
+    const accessToken = cookieStore.get("access_token");
+
+    if (!accessToken) {
+      return false;
+    }
+
+    // Validate token with Go backend
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${accessToken.value}`,
+      },
+      cache: "no-store",
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error("Auth check error:", error);
+    return false;
+  }
+}
 
 export default async function Home() {
-  const { isAuthenticated } = getKindeServerSession();
-  const authenticated = await isAuthenticated();
+  const isAuthenticated = await checkAuth();
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-indigo-50 via-white to-purple-50 overflow-hidden">
@@ -27,19 +52,19 @@ export default async function Home() {
           </Link>
 
           <div className="flex items-center gap-3">
-            {authenticated ? (
+            {isAuthenticated ? (
               <>
                 <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dashboard</Link>
-                <LogoutLink postLogoutRedirectURL="/">
+                <Link href="/api/auth/logout">
                   <Button variant="ghost" className="rounded-full px-5 text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition">Log Out</Button>
-                </LogoutLink>
+                </Link>
               </>
             ) : (
               <>
                 <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dashboard</Link>
-                <LoginLink postLoginRedirectURL="/">
+                <Link href="/login">
                   <Button className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-5 shadow-md hover:shadow-lg transition-all duration-300">Join Now</Button>
-                </LoginLink>
+                </Link>
               </>
             )}
           </div>

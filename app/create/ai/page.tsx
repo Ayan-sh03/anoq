@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { useAuth } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChangeEvent, FormEvent, useState } from "react";
@@ -18,14 +18,14 @@ export default function CreateAI() {
   });
   const [pending, setPending] = useState(false);
   const toast = useToast();
-  const { isAuthenticated, isLoading, user } = useKindeBrowserClient();
+  const { isAuthenticated, loading, user } = useAuth();
 
 
-  if (isLoading) return <Loading />;
+  if (loading) return <Loading />;
 
   if (!isAuthenticated) {
-    redirect("/api/auth/login?post_login_redirect_url=/create/ai");
-  } 
+    redirect("/login?redirect=/create/ai");
+  }
   function handleChange(
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {

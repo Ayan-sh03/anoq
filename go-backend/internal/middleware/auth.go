@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
+
+	"anoq/internal/auth"
 
 	"github.com/labstack/echo/v4"
 )
@@ -18,38 +18,43 @@ func Auth() echo.MiddlewareFunc {
 				return next(c)
 			}
 
-			// Get the Authorization header
+			// Get the Authorization header or access_token cookie
+			var tokenString string
+
+			// Check Authorization header first
 			authHeader := c.Request().Header.Get("Authorization")
-			if authHeader == "" {
+			if authHeader != "" {
+				parts := strings.Split(authHeader, " ")
+				if len(parts) == 2 && parts[0] == "Bearer" {
+					tokenString = parts[1]
+				}
+			}
+
+			// If no header, check cookie
+			if tokenString == "" {
+				cookie, err := c.Cookie("access_token")
+				if err == nil {
+					tokenString = cookie.Value
+				}
+			}
+
+			if tokenString == "" {
 				return c.JSON(http.StatusUnauthorized, map[string]string{
-					"error": "Authorization header is required",
+					"error": "Authentication required",
 				})
 			}
 
-			// Extract the token
-			parts := strings.Split(authHeader, " ")
-			if len(parts) != 2 || parts[0] != "Bearer" {
+			// Validate JWT token
+			claims, err := auth.ValidateAccessToken(tokenString)
+			if err != nil {
 				return c.JSON(http.StatusUnauthorized, map[string]string{
-					"error": "Invalid authorization format",
-				})
-			}
-			token := parts[1]
-
-			// Verify token using Kinde auth (for now just check against env var)
-			validToken := os.Getenv("AUTH_TOKEN")
-			if validToken == "" {
-				return fmt.Errorf("AUTH_TOKEN environment variable not set")
-			}
-
-			if token != validToken {
-				return c.JSON(http.StatusUnauthorized, map[string]string{
-					"error": "Invalid token",
+					"error": "Invalid or expired token",
 				})
 			}
 
-			// For now, hardcode user_email for development
-			// In production, this would come from token verification
-			c.Set("user_email", "test@example.com")
+			// Set user context
+			c.Set("user_id", claims.UserID)
+			c.Set("user_email", claims.Email)
 
 			return next(c)
 		}
@@ -61,6 +66,9 @@ func skipAuth(path, method string) bool {
 	// Public endpoints that don't require authentication
 	publicPaths := []string{
 		"/health",
+		"/api/auth/login",
+		"/api/auth/register",
+		"/api/auth/refresh",
 		"/api/forms/.*/submit", // Form submission endpoint
 	}
 

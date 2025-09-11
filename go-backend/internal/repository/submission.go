@@ -1,29 +1,32 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 
 	"anoq/internal/models"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type SubmissionRepository struct {
-	db *sql.DB
+	db *pgx.Conn
 }
 
-func NewSubmissionRepository(db *sql.DB) *SubmissionRepository {
+func NewSubmissionRepository(db *pgx.Conn) *SubmissionRepository {
 	return &SubmissionRepository{
 		db: db,
 	}
 }
 
 func (r *SubmissionRepository) Create(formID int, submission *models.FilledFormInput, userIP string) (*models.FilledForm, error) {
-	tx, err := r.db.Begin()
+	tx, err := r.db.Begin(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("error starting transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
 	// Insert filled form
 	formQuery := `
@@ -34,6 +37,7 @@ RETURNING id, submitted_at`
 	var filledFormID int
 	var submittedAt string
 	err = tx.QueryRow(
+		context.Background(),
 		formQuery,
 		formID,
 		submission.Name,
@@ -47,6 +51,7 @@ RETURNING id, submitted_at`
 	// Insert basic answers
 	for _, a := range submission.Answers {
 		_, err = tx.Exec(
+			context.Background(),
 			"INSERT INTO filled_form_answers (filled_form_id, question_id, answer) VALUES ($1, $2, $3)",
 			filledFormID,
 			a.QuestionID,
@@ -65,6 +70,7 @@ RETURNING id, submitted_at`
 		}
 
 		_, err = tx.Exec(
+			context.Background(),
 			"INSERT INTO filled_form_choice_answers (filled_form_id, choice_question_id, selected_choices) VALUES ($1, $2, $3)",
 			filledFormID,
 			a.ChoiceQuestionID,
@@ -75,7 +81,7 @@ RETURNING id, submitted_at`
 		}
 	}
 
-	if err = tx.Commit(); err != nil {
+	if err = tx.Commit(context.Background()); err != nil {
 		return nil, fmt.Errorf("error committing transaction: %w", err)
 	}
 
@@ -90,7 +96,9 @@ SELECT f.id, f.form_id, f.name, f.email, f.user_ip, f.submitted_at
 FROM filled_forms f
 WHERE f.id = $1`
 
-	err := r.db.QueryRow(formQuery, id).Scan(
+	err := r.db.QueryRow(
+		context.Background(),
+		formQuery, id).Scan(
 		&filledForm.ID,
 		&filledForm.FormID,
 		&filledForm.Name,
@@ -111,7 +119,9 @@ SELECT ffa.question_id, ffa.answer, ffa.created_at
 FROM filled_form_answers ffa
 WHERE ffa.filled_form_id = $1`
 
-	rows, err := r.db.Query(answersQuery, id)
+	rows, err := r.db.Query(
+		context.Background(),
+		answersQuery, id)
 	if err != nil {
 		return nil, fmt.Errorf("error getting answers: %w", err)
 	}
@@ -132,7 +142,9 @@ SELECT ffca.choice_question_id, ffca.selected_choices, ffca.created_at
 FROM filled_form_choice_answers ffca
 WHERE ffca.filled_form_id = $1`
 
-	choiceRows, err := r.db.Query(choiceQuery, id)
+	choiceRows, err := r.db.Query(
+		context.Background(),
+		choiceQuery, id)
 	if err != nil {
 		return nil, fmt.Errorf("error getting choice answers: %w", err)
 	}
@@ -141,7 +153,12 @@ WHERE ffca.filled_form_id = $1`
 	for choiceRows.Next() {
 		a := models.ChoiceAnswer{FilledFormID: id}
 		var selectedChoicesJSON []byte
-		err := choiceRows.Scan(&a.ChoiceQuestionID, &selectedChoicesJSON, &a.CreatedAt)
+		err := choiceRows.Scan(
+			context.Background(),
+			&a.ChoiceQuestionID,
+			&selectedChoicesJSON,
+			&a.CreatedAt,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning choice answer: %w", err)
 		}
@@ -166,7 +183,9 @@ FROM filled_forms f
 WHERE f.form_id = $1
 ORDER BY f.submitted_at DESC`
 
-	rows, err := r.db.Query(formQuery, formID)
+	rows, err := r.db.Query(
+		context.Background(),
+		formQuery, formID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting submissions: %w", err)
 	}
@@ -191,15 +210,13 @@ ORDER BY f.submitted_at DESC`
 
 func (r *SubmissionRepository) Delete(id int) error {
 	query := "DELETE FROM filled_forms WHERE id = $1"
-	result, err := r.db.Exec(query, id)
+	result, err := r.db.Exec(context.Background(), query, id)
+
 	if err != nil {
 		return fmt.Errorf("error deleting submission: %w", err)
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error getting rows affected: %w", err)
-	}
+	rowsAffected := result.RowsAffected()
 	if rowsAffected == 0 {
 		return fmt.Errorf("submission not found")
 	}

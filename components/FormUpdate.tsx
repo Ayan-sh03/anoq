@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { useAuth } from "@/lib/auth";
 import { Trash2 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { useState } from "react";
@@ -24,14 +24,12 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
   const [animationParent] = useAutoAnimate()
 
 
-  const { isAuthenticated, isLoading, user } = useKindeBrowserClient();
-
-  if (isLoading) return <Loading />;
+  const { isAuthenticated, user } = useAuth();
 
   if (isAuthenticated) {
     console.log("Logged in user:", user);
   } else {
-    redirect("/api/auth/login?post_login_redirect_url=/create");
+    redirect("/login?redirect=/dashboard");
   }
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,20 +126,20 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
 
       if (res.ok) {
         const data = await res.json();
-        
+
         toast.toast({
           title: "Success",
           description: data.message,
           variant: "success",
         });
-      } 
+      }
       else if (res.status === 429) {
-      toast.toast({
-        title: "Error",
-           description: "Too many requests. Please try again later.",
-           variant: "warning",
-         });
-       }
+        toast.toast({
+          title: "Error",
+          description: "Too many requests. Please try again later.",
+          variant: "warning",
+        });
+      }
       else {
         toast.toast({
           title: "Error",
@@ -202,9 +200,9 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
   const addQuestion = () => {
     //@ts-ignore
     setQuestion([...question, { question_text: "" }]);
-    };
-    
-    const addChoiceQuestion = () => {
+  };
+
+  const addChoiceQuestion = () => {
     //@ts-ignore
     setChoiceQuestion([...choiceQuestion, { question_text: "", choices: [] }]);
   };
@@ -291,9 +289,8 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
             {choiceQuestion.map((q, questionIndex) => (
               <div
                 key={questionIndex}
-                className={`${
-                  questionIndex > 0 ? " border-t pt-2 border-zinc-500 " : ""
-                }`}
+                className={`${questionIndex > 0 ? " border-t pt-2 border-zinc-500 " : ""
+                  }`}
               >
                 <div className="flex items-center">
                   <Input

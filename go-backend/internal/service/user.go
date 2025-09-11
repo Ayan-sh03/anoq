@@ -1,10 +1,14 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 
+	"anoq/internal/auth"
 	"anoq/internal/models"
 	"anoq/internal/repository"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type UserService struct {
@@ -20,7 +24,8 @@ func NewUserService(repo *repository.UserRepository) *UserService {
 func (s *UserService) CreateUser(input *models.UserInput) (*models.User, error) {
 	// Check if user with email already exists
 	existingUser, err := s.repo.GetByEmail(input.Email)
-	if err != nil {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		// Only return error if it's not a "no rows found" error
 		return nil, fmt.Errorf("error checking existing user: %w", err)
 	}
 	if existingUser != nil {
@@ -31,6 +36,52 @@ func (s *UserService) CreateUser(input *models.UserInput) (*models.User, error) 
 	user, err := s.repo.Create(input)
 	if err != nil {
 		return nil, fmt.Errorf("error creating user: %w", err)
+	}
+
+	return user, nil
+}
+
+func (s *UserService) CreateUserWithPassword(input *models.UserRegister, passwordHash string) (*models.User, error) {
+	// Check if user with email already exists
+	existingUser, err := s.repo.GetByEmail(input.Email)
+	if err != nil {
+		return nil, fmt.Errorf("error checking existing user: %w", err)
+	}
+	if existingUser != nil {
+		return nil, fmt.Errorf("user with email %s already exists", input.Email)
+	}
+
+	// Create user input with password hash
+	userInput := &models.UserInput{
+		Email:        input.Email,
+		PasswordHash: passwordHash,
+		Username:     input.Username,
+		FamilyName:   input.FamilyName,
+		GivenName:    input.GivenName,
+	}
+
+	// Create user
+	user, err := s.repo.Create(userInput)
+	if err != nil {
+		return nil, fmt.Errorf("error creating user: %w", err)
+	}
+
+	return user, nil
+}
+
+func (s *UserService) AuthenticateUser(email, password string) (*models.User, error) {
+	// Get user by email
+	user, err := s.repo.GetByEmail(email)
+	if err != nil {
+		return nil, fmt.Errorf("error getting user: %w", err)
+	}
+	if user == nil {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	// Verify password using bcrypt
+	if err := auth.VerifyPassword(password, user.PasswordHash); err != nil {
+		return nil, fmt.Errorf("invalid credentials")
 	}
 
 	return user, nil

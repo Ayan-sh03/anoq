@@ -1,17 +1,19 @@
 package repository
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 
 	"anoq/internal/models"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type UserRepository struct {
-	db *sql.DB
+	db *pgx.Conn
 }
 
-func NewUserRepository(db *sql.DB) *UserRepository {
+func NewUserRepository(db *pgx.Conn) *UserRepository {
 	return &UserRepository{
 		db: db,
 	}
@@ -19,17 +21,19 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 func (r *UserRepository) Create(user *models.UserInput) (*models.User, error) {
 	query := `
-INSERT INTO users (email, username, family_name, given_name)
-VALUES ($1, $2, $3, $4)
+INSERT INTO users (email, username, family_name, given_name, password_hash)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id, email, username, family_name, given_name, created_at`
 
 	createdUser := &models.User{}
 	err := r.db.QueryRow(
+		context.Background(),
 		query,
 		user.Email,
 		user.Username,
 		user.FamilyName,
 		user.GivenName,
+		user.PasswordHash,
 	).Scan(
 		&createdUser.ID,
 		&createdUser.Email,
@@ -48,21 +52,22 @@ RETURNING id, email, username, family_name, given_name, created_at`
 
 func (r *UserRepository) GetByID(id int) (*models.User, error) {
 	query := `
-SELECT id, email, username, family_name, given_name, created_at
+SELECT id, email, username, family_name, given_name, password_hash, created_at
 FROM users
 WHERE id = $1`
 
 	user := &models.User{}
-	err := r.db.QueryRow(query, id).Scan(
+	err := r.db.QueryRow(context.Background(), query, id).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Username,
 		&user.FamilyName,
 		&user.GivenName,
+		&user.PasswordHash,
 		&user.CreatedAt,
 	)
 
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return nil, nil
 	}
 	if err != nil {
@@ -74,21 +79,22 @@ WHERE id = $1`
 
 func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 	query := `
-SELECT id, email, username, family_name, given_name, created_at
+SELECT id, email, username, family_name, given_name, password_hash, created_at
 FROM users
 WHERE email = $1`
 
 	user := &models.User{}
-	err := r.db.QueryRow(query, email).Scan(
+	err := r.db.QueryRow(context.Background(), query, email).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Username,
 		&user.FamilyName,
 		&user.GivenName,
+		&user.PasswordHash,
 		&user.CreatedAt,
 	)
 
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return nil, nil
 	}
 	if err != nil {
@@ -107,6 +113,7 @@ RETURNING id, email, username, family_name, given_name, created_at`
 
 	updatedUser := &models.User{}
 	err := r.db.QueryRow(
+		context.Background(),
 		query,
 		user.Email,
 		user.Username,
@@ -122,7 +129,7 @@ RETURNING id, email, username, family_name, given_name, created_at`
 		&updatedUser.CreatedAt,
 	)
 
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return nil, nil
 	}
 	if err != nil {
@@ -134,15 +141,12 @@ RETURNING id, email, username, family_name, given_name, created_at`
 
 func (r *UserRepository) Delete(id int) error {
 	query := "DELETE FROM users WHERE id = $1"
-	result, err := r.db.Exec(query, id)
+	result, err := r.db.Exec(context.Background(), query, id)
 	if err != nil {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error getting rows affected: %w", err)
-	}
+	rowsAffected := result.RowsAffected()
 	if rowsAffected == 0 {
 		return nil
 	}

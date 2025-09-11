@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { useAuth } from "@/lib/auth";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -27,18 +27,17 @@ const Create = () => {
   const toast = useToast();
   const [animationParent] = useAutoAnimate()
 
-  const {isAuthenticated,isLoading , user} = useKindeBrowserClient()
-  
+  const { isAuthenticated, loading, user } = useAuth()
 
-  if (isLoading) return (<Loading/>)
 
-  if(isAuthenticated){
+  if (loading) return (<Loading />)
+
+  if (isAuthenticated) {
     console.log("Logged in user:", user);
-    
+
   }
-  else{
-    redirect("/api/auth/login?post_login_redirect_url=/dashboard")
-    
+  else {
+    redirect("/login?redirect=/dashboard")
   }
 
 
@@ -118,7 +117,7 @@ const Create = () => {
     }
 
     const form = {
-      author : user?.email,
+      author: user?.email,
       title: title,
       description: description,
       questions: question,
@@ -140,12 +139,12 @@ const Create = () => {
         setQuestion([]);
         setChoiceQuestion([]);
         const data = await res.json()
-        
+
         toast.toast({
           title: "Success",
-          description: data.message ,
+          description: data.message,
           variant: "success",
-          action :(<Link href={`/${data.slug}`}>Visit your form on {process.env.NEXT_PUBLIC_API_URL}/{data.slug}</Link>)
+          action: (<Link href={`/${data.slug}`}>Visit your form on {process.env.NEXT_PUBLIC_API_URL}/{data.slug}</Link>)
         });
 
 
@@ -153,7 +152,7 @@ const Create = () => {
         toast.toast({
           title: "Error",
           description: "Failed to create form",
-          
+
           variant: "destructive",
         });
       }
@@ -202,7 +201,7 @@ const Create = () => {
     ) {
 
       //@ts-ignore
-      newChoiceQuestion[questionIndex ].choices[choiceIndex] = e.target.value;
+      newChoiceQuestion[questionIndex].choices[choiceIndex] = e.target.value;
     } else {
       // Handle the case where the question or choices might be undefined
       console.error("Invalid questionIndex or choiceIndex");
@@ -233,8 +232,8 @@ const Create = () => {
 
   const handleChoiceDelete = (questionIndex: number, choiceIndex: number) => {
     const newChoiceQuestions = [...choiceQuestion];
-      //@ts-ignore
-   
+    //@ts-ignore
+
     newChoiceQuestions[questionIndex].choices.splice(choiceIndex, 1);
     setChoiceQuestion(newChoiceQuestions);
   };
@@ -247,9 +246,9 @@ const Create = () => {
 
   return (
     <>
-        <Navbar/>
+      <Navbar />
       <div className="h-screen container flex flex-col gap-20 py-10 items-center">
-      <h1 className="text-center text-4xl  text-zinc-600 font-bold " >Create Your Form</h1>
+        <h1 className="text-center text-4xl  text-zinc-600 font-bold " >Create Your Form</h1>
         <form className="flex flex-col gap-2 max-w-4xl justify-center items-center" onSubmit={handleSubmit}>
           <label htmlFor="title">Title</label>
           <Input
@@ -276,7 +275,7 @@ const Create = () => {
                     name="question_text"
                     placeholder={`Question ${index + 1}`}
                     value={q.question_text}
-                    onChange={(e) => handleQuestionChange(e,index )}
+                    onChange={(e) => handleQuestionChange(e, index)}
                   />
                   <button
                     type="button"
@@ -296,9 +295,8 @@ const Create = () => {
               {choiceQuestion.map((q, questionIndex) => (
                 <div
                   key={questionIndex}
-                  className={`${
-                    questionIndex > 0 ? " border-t pt-2 border-zinc-500 " : ""
-                  }`}
+                  className={`${questionIndex > 0 ? " border-t pt-2 border-zinc-500 " : ""
+                    }`}
                 >
                   <div className="flex items-center" >
                     <Input
@@ -318,7 +316,7 @@ const Create = () => {
                       <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
                     </button>
                   </div>
-                  <div className="mt-4 grid grid-cols-2 gap-4 "  ref={animationParent}>
+                  <div className="mt-4 grid grid-cols-2 gap-4 " ref={animationParent}>
                     {q.choices?.map((choice, choiceIndex) => (
                       <div key={choiceIndex} className="flex items-center">
                         <Input

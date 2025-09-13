@@ -15,9 +15,12 @@ export default async function Submission({
   params: { slug: string };
 }) {
   const slug = params.slug;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/form/submissions/${slug}`);
+  const res = await fetch(`/api/form/submissions/${slug}`, {
+    credentials: "include", // Include cookies for authentication
+    cache: "no-store",
+  });
 
-  const { data } = await res.json();
+  const data = await res.json();
 
   return (
     <main className="container h-screen  mx-auto px-4 py-8 md:px-6 lg:px-8">
@@ -55,8 +58,8 @@ export default async function Submission({
           </DropdownMenu>
         </div>
       </div>
-      
-      
+
+
       {data && data.length > 0 ? (<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {data?.map(async (item: any, index: number) => (
           <CardComponent email={item.email} name={item.name} key={index}  questions={item.question} choiceQuesions={item.choiceQuestion} />

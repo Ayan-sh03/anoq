@@ -44,25 +44,7 @@ func (s *FormService) CreateForm(authorEmail string, input *models.FormInput) (*
 
 	// Generate unique slug
 	var slug string
-	for i := 0; i < 5; i++ { // Try 5 times to generate a unique slug
-		slug, err = s.generateSlug()
-		if err != nil {
-			return nil, fmt.Errorf("error generating slug: %w", err)
-		}
-
-		// Check if slug exists
-		existingForm, err := s.repo.GetBySlug(slug)
-		if err != nil {
-			return nil, fmt.Errorf("error checking slug: %w", err)
-		}
-		if existingForm == nil {
-			break // Unique slug found
-		}
-
-		if i == 4 {
-			return nil, fmt.Errorf("failed to generate unique slug")
-		}
-	}
+	slug, err = s.generateSlug()
 	log.Println("Generated slug:", slug)
 
 	// Create form
@@ -187,4 +169,83 @@ func (s *FormService) DeleteForm(slug string, authorEmail string) error {
 	}
 
 	return nil
+}
+
+func (s *FormService) GetUserForms(userID int) ([]models.Form, error) {
+	forms, err := s.repo.GetFormsByUserID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting user forms: %w", err)
+	}
+
+	return forms, nil
+}
+
+func (s *FormService) CheckSubmissionByIP(slug string, ipAddress string) (bool, error) {
+	exists, err := s.repo.CheckSubmissionByIP(slug, ipAddress)
+	if err != nil {
+		return false, fmt.Errorf("error checking submission by IP: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (s *FormService) CreateAIForm(authorEmail string, prompt string) (*models.Form, error) {
+	// For now, this is a simple implementation that creates a basic form
+	// In a real implementation, you would integrate with an AI service to generate questions
+
+	// Get author
+	author, err := s.userRepo.GetByEmail(authorEmail)
+	if err != nil {
+		return nil, fmt.Errorf("error getting author: %w", err)
+	}
+	if author == nil {
+		return nil, fmt.Errorf("author not found")
+	}
+
+	// Generate unique slug
+	var slug string
+	for i := 0; i < 5; i++ { // Try 5 times to generate a unique slug
+		slug, err = s.generateSlug()
+		if err != nil {
+			return nil, fmt.Errorf("error generating slug: %w", err)
+		}
+
+		// Check if slug exists
+		existingForm, err := s.repo.GetBySlug(slug)
+		if err != nil {
+			return nil, fmt.Errorf("error checking slug: %w", err)
+		}
+		if existingForm == nil {
+			break // Unique slug found
+		}
+
+		if i == 4 {
+			return nil, fmt.Errorf("failed to generate unique slug")
+		}
+	}
+
+	// Create basic AI-generated form based on prompt
+	formInput := &models.FormInput{
+		Title:       fmt.Sprintf("AI Generated Form: %s", prompt),
+		Description: fmt.Sprintf("This form was generated based on your prompt: %s", prompt),
+		Questions: []models.QuestionInput{
+			{QuestionText: "What is your name?"},
+			{QuestionText: "What is your email address?"},
+			{QuestionText: fmt.Sprintf("Please provide your thoughts on: %s", prompt)},
+		},
+		ChoiceQuestions: []models.MultipleChoiceQuestionInput{
+			{
+				QuestionText: "How would you rate this topic?",
+				Choices:      []string{"Excellent", "Good", "Fair", "Poor"},
+			},
+		},
+	}
+
+	// Create form
+	form, err := s.repo.Create(formInput, author.ID, slug)
+	if err != nil {
+		return nil, fmt.Errorf("error creating AI form: %w", err)
+	}
+
+	return form, nil
 }

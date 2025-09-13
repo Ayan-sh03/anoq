@@ -25,6 +25,7 @@ func NewSubmissionHandler(service *service.SubmissionService) *SubmissionHandler
 func (h *SubmissionHandler) Register(e *echo.Echo) {
 	e.POST("/api/forms/:slug/submit", h.SubmitForm)
 	e.GET("/api/forms/:slug/submissions", h.GetFormSubmissions)
+	e.GET("/api/forms/:slug/submitted", h.CheckSubmissionByIP)
 	e.GET("/api/submissions/:id", h.GetSubmission)
 	e.DELETE("/api/submissions/:id", h.DeleteSubmission)
 }
@@ -224,5 +225,47 @@ func (h *SubmissionHandler) DeleteSubmission(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "Submission deleted successfully",
+	})
+}
+
+// CheckSubmissionByIP godoc
+// @Summary Check if user has submitted form by IP
+// @Description Check if a user has already submitted a form by their IP address
+// @Tags submissions
+// @Accept json
+// @Produce json
+// @Param slug path string true "Form Slug"
+// @Success 200 {object} map[string]bool
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/forms/{slug}/submitted [get]
+func (h *SubmissionHandler) CheckSubmissionByIP(c echo.Context) error {
+	startTime := time.Now()
+
+	slug := c.Param("slug")
+	ipAddress := c.RealIP()
+
+	logger.Info("CheckSubmissionByIP: Checking submission by IP", map[string]interface{}{
+		"slug":      slug,
+		"ipAddress": ipAddress,
+	})
+
+	submitted, err := h.service.CheckSubmissionByIP(slug, ipAddress)
+	if err != nil {
+		logger.Error("CheckSubmissionByIP: Error checking submission", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	duration := time.Since(startTime)
+	logger.Info("CheckSubmissionByIP: Submission check completed", map[string]interface{}{
+		"slug":      slug,
+		"submitted": submitted,
+		"duration":  duration,
+	})
+
+	return c.JSON(http.StatusOK, map[string]bool{
+		"submitted": submitted,
 	})
 }

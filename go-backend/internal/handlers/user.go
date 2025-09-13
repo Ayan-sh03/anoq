@@ -14,20 +14,23 @@ import (
 )
 
 type UserHandler struct {
-	service *service.UserService
+	service     *service.UserService
+	formService *service.FormService
 }
 
-func NewUserHandler(service *service.UserService) *UserHandler {
+func NewUserHandler(service *service.UserService, formService *service.FormService) *UserHandler {
 	return &UserHandler{
-		service: service,
+		service:     service,
+		formService: formService,
 	}
 }
 
 func (h *UserHandler) Register(e *echo.Echo) {
 	e.POST("/api/users", h.CreateUser)
-	e.GET("/api/users/:id", h.GetUser)
-	e.PATCH("/api/users/:id", h.UpdateUser)
-	e.DELETE("/api/users/:id", h.DeleteUser)
+	e.GET("/api/users/:id", h.GetUser, middleware.Auth())
+	e.PATCH("/api/users/:id", h.UpdateUser, middleware.Auth())
+	e.DELETE("/api/users/:id", h.DeleteUser, middleware.Auth())
+	e.GET("/api/users/me/forms", h.GetUserForms, middleware.Auth())
 }
 
 func (h *UserHandler) CreateUser(c echo.Context) error {
@@ -210,4 +213,32 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "User deleted successfully",
 	})
+}
+
+func (h *UserHandler) GetUserForms(c echo.Context) error {
+	startTime := time.Now()
+
+	// Get user ID from context (set by Auth middleware)
+	userID := c.Get("user_id").(int)
+	email := c.Get("user_email").(string)
+
+	logger.Info("GetUserForms: Fetching user forms", map[string]interface{}{
+		"userId": userID,
+		"email":  email,
+	})
+
+	forms, err := h.formService.GetUserForms(userID)
+	if err != nil {
+		logger.Error("GetUserForms: Error getting user forms", err)
+		return middleware.NewInternalError("Error getting user forms", err.Error())
+	}
+
+	duration := time.Since(startTime)
+	logger.Info("GetUserForms: User forms fetched successfully", map[string]interface{}{
+		"userId":     userID,
+		"formCount":  len(forms),
+		"duration":   duration,
+	})
+
+	return c.JSON(http.StatusOK, forms)
 }

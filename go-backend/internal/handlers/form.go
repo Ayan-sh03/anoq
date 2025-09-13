@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"anoq/internal/logger"
+	"anoq/internal/middleware"
 	"anoq/internal/models"
 	"anoq/internal/service"
 
@@ -22,7 +23,8 @@ func NewFormHandler(service *service.FormService) *FormHandler {
 }
 
 func (h *FormHandler) Register(e *echo.Echo) {
-	e.POST("/api/forms", h.CreateForm)
+	e.POST("/api/forms", h.CreateForm, middleware.Auth())
+	e.POST("/api/forms/ai", h.CreateAIForm, middleware.Auth())
 	e.GET("/api/forms/:slug", h.GetForm)
 	e.PATCH("/api/forms/:slug", h.UpdateForm)
 	e.DELETE("/api/forms/:slug", h.DeleteForm)
@@ -52,10 +54,13 @@ func (h *FormHandler) CreateForm(c echo.Context) error {
 		})
 	}
 
-	// Get user email from context (set by auth middleware)
-	authorEmail := c.Get("user_email").(string)
-	if authorEmail == "" {
-		authorEmail = "anonymous@example.com" // Fallback for public forms
+	// Get author email from context (set by auth middleware)
+	authorEmail, ok := c.Get("user_email").(string)
+	if !ok || authorEmail == "" {
+		logger.Error("CreateForm: Unauthorized - author_email not found in context", nil)
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "Authentication required",
+		})
 	}
 
 	logger.Info("CreateForm: Creating new form", map[string]interface{}{
@@ -288,7 +293,13 @@ func (h *FormHandler) CloseForm(c echo.Context) error {
 	startTime := time.Now()
 
 	slug := c.Param("slug")
-	authorEmail := c.Get("user_email").(string)
+	authorEmail, ok := c.Get("user_email").(string)
+	if !ok || authorEmail == "" {
+		logger.Error("CloseForm: Unauthorized - user_email not found in context", nil)
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "Authentication required",
+		})
+	}
 
 	logger.Info("CloseForm: Closing form", map[string]interface{}{
 		"slug":        slug,
@@ -311,4 +322,66 @@ func (h *FormHandler) CloseForm(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "Form closed successfully",
 	})
+}
+
+// CreateAIForm godoc
+// @Summary Create an AI-generated form
+// @Description Create a new form using AI to generate questions based on a prompt
+// @Tags forms
+// @Accept json
+// @Produce json
+// @Param input body models.AIFormInput true "AI form input"
+// @Success 201 {object} models.Form
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/forms/ai [post]
+func (h *FormHandler) CreateAIForm(c echo.Context) error {
+	startTime := time.Now()
+
+	input := new(models.AIFormInput)
+	if err := c.Bind(input); err != nil {
+		logger.Error("CreateAIForm: Invalid request payload", err)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid request payload",
+		})
+	}
+
+	// Get user email from context (set by auth middleware)
+	authorEmail := c.Get("user_email").(string)
+	if authorEmail == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "Authentication required",
+		})
+	}
+
+	logger.Info("CreateAIForm: Creating AI form", map[string]interface{}{
+		"prompt":      input.Prompt,
+		"authorEmail": authorEmail,
+	})
+
+	// Validate required fields
+	if input.Prompt == "" {
+		logger.Warn("CreateAIForm: Prompt is required", input.Prompt)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Prompt is required",
+		})
+	}
+
+	form, err := h.service.CreateAIForm(authorEmail, input.Prompt)
+	if err != nil {
+		logger.Error("CreateAIForm: Error creating AI form", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	duration := time.Since(startTime)
+	logger.Info("CreateAIForm: AI form created successfully", map[string]interface{}{
+		"formId":   form.ID,
+		"slug":     form.Slug,
+		"title":    form.Title,
+		"duration": duration,
+	})
+
+	return c.JSON(http.StatusCreated, form)
 }

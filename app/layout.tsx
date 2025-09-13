@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Anoq",
   description: "Anonymous feedback made easy",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

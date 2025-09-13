@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"anoq/internal/models"
 
@@ -35,7 +36,7 @@ VALUES ($1, $2, $3, $4, 'open')
 RETURNING id, created_at, updated_at`
 
 	var formID int
-	var createdAt, updatedAt string
+	var createdAt, updatedAt time.Time
 	err = tx.QueryRow(context.Background(), formQuery, form.Title, form.Description, slug, authorID).Scan(
 		&formID,
 		&createdAt,
@@ -314,4 +315,60 @@ func (r *FormRepository) Delete(id int) error {
 	}
 
 	return nil
+}
+
+func (r *FormRepository) GetFormsByUserID(userID int) ([]models.Form, error) {
+	forms := []models.Form{}
+
+	query := `
+	SELECT f.id, f.title, f.description, f.slug, f.author_id, f.status, f.created_at, f.updated_at
+	FROM forms f
+	WHERE f.author_id = $1
+	ORDER BY f.created_at DESC`
+
+	rows, err := r.db.Query(context.Background(), query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting user forms: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		form := models.Form{}
+		err := rows.Scan(
+			&form.ID,
+			&form.Title,
+			&form.Description,
+			&form.Slug,
+			&form.AuthorID,
+			&form.Status,
+			&form.CreatedAt,
+			&form.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning form: %w", err)
+		}
+
+		forms = append(forms, form)
+	}
+
+	return forms, nil
+}
+
+func (r *FormRepository) CheckSubmissionByIP(slug string, ipAddress string) (bool, error) {
+	query := `
+	SELECT EXISTS(
+		SELECT 1
+		FROM filled_forms ff
+		JOIN forms f ON ff.form_id = f.id
+		WHERE f.slug = $1 AND ff.user_ip = $2
+		LIMIT 1
+	)`
+
+	var exists bool
+	err := r.db.QueryRow(context.Background(), query, slug, ipAddress).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("error checking submission by IP: %w", err)
+	}
+
+	return exists, nil
 }

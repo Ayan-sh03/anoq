@@ -158,3 +158,10 @@ func (s *UserService) DeleteUser(id int) error {
 
 	return nil
 }
+
+func (s *UserService) GetUserForms(userID int) ([]models.Form, error) {
+	// This method should be implemented in the FormService, not UserService
+	// We need to inject FormService into UserHandler or create a separate method
+	// For now, let's return an error to indicate this needs to be handled differently
+	return nil, fmt.Errorf("GetUserForms should be called through FormService")
+}

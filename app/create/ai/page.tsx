@@ -55,15 +55,18 @@ export default function CreateAI() {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include", // Include cookies for authentication
       body: body,
     });
     const data = await res.json();
     if (!res.ok) {
       toast.toast({
         title: "Error",
-        description: `Something went wrong: ${data.message}`,
+        description: `Something went wrong: ${data.error || data.message}`,
         variant: "destructive",
       });
+      setPending(false);
+      return;
     }
 
     toast.toast({

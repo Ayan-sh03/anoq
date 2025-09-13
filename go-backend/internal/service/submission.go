@@ -128,3 +128,22 @@ func (s *SubmissionService) DeleteSubmission(id int) error {
 
 	return nil
 }
+
+func (s *SubmissionService) CheckSubmissionByIP(slug string, ipAddress string) (bool, error) {
+	// Get form
+	form, err := s.formRepo.GetBySlug(slug)
+	if err != nil {
+		return false, fmt.Errorf("error getting form: %w", err)
+	}
+	if form == nil {
+		return false, fmt.Errorf("form not found")
+	}
+
+	// Check if submission exists for this IP
+	exists, err := s.formRepo.CheckSubmissionByIP(slug, ipAddress)
+	if err != nil {
+		return false, fmt.Errorf("error checking submission by IP: %w", err)
+	}
+
+	return exists, nil
+}

@@ -87,3 +87,7 @@ type ChoiceAnswerInput struct {
 	ChoiceQuestionID int      `json:"choice_question_id"`
 	SelectedChoices  []string `json:"selected_choices"`
 }
+
+type AIFormInput struct {
+	Prompt string `json:"prompt"`
+}

@@ -53,7 +53,7 @@ func main() {
 	submissionService := service.NewSubmissionService(submissionRepo, formRepo)
 
 	// Initialize handlers
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := handlers.NewUserHandler(userService, formService)
 	formHandler := handlers.NewFormHandler(formService)
 	submissionHandler := handlers.NewSubmissionHandler(submissionService)
 	authHandler := handlers.NewAuthHandler(userService)

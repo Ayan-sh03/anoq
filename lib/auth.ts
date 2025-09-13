@@ -57,11 +57,37 @@ class AuthManager {
   private currentUser: User | null = null;
   private tokens: AuthTokens | null = null;
   private authListeners: Array<(user: User | null) => void> = [];
+  private lastFetchTime: number = 0;
+  private readonly CACHE_KEY = 'auth_user_cache';
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache TTL
 
   private constructor() {
-    // Don't load state immediately - let components handle it
-    this.currentUser = null;
-    this.tokens = null;
+    // Load cached user on initialization
+    this.loadCachedUser();
+  }
+
+  // Load cached user from localStorage
+  private loadCachedUser(): void {
+    try {
+      const cached = localStorage.getItem(this.CACHE_KEY);
+      if (cached) {
+        const { user, timestamp } = JSON.parse(cached);
+        const now = Date.now();
+
+        // Check if cache is still valid
+        if (now - timestamp < this.CACHE_TTL) {
+          this.currentUser = user;
+          logger.debug('User loaded from cache', { userId: user?.id });
+        } else {
+          logger.debug('Cache expired, clearing');
+          localStorage.removeItem(this.CACHE_KEY);
+        }
+      }
+    } catch (error) {
+      logger.error('Error loading cached user', error);
+      // Clear potentially corrupted cache
+      localStorage.removeItem(this.CACHE_KEY);
+    }
   }
 
   static getInstance(): AuthManager {

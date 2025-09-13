@@ -151,15 +151,18 @@ const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
         choiceQuestion: choiceQuestionValues,
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/response`, {
+      const res = await fetch(`/api/forms/${slug}/submit`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(formData),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message);
+        throw new Error(data.error || data.message || "Failed to submit form");
       }
 
       setQuestionValues([]);

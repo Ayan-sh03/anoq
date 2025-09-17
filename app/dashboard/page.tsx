@@ -6,7 +6,7 @@ import FormCard from "@/components/FormCard";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/auth/context';
 import { Sparkles, FileText, Plus } from "lucide-react";
 
 export default function DashboardPage() {
@@ -16,8 +16,9 @@ export default function DashboardPage() {
   const [formsLoading, setFormsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("User state changed:", { user, loading, isAuthenticated });
     if (!loading && !isAuthenticated) {
-      router.push('/login?redirect=/dashboard');
+      router.push('/login')
       return;
     }
 

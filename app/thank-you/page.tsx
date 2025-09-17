@@ -35,17 +35,6 @@ export default function ThankYouPage() {
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col items-center text-center">
 
-              {/* Success Icon with Animation */}
-              <div className="mb-8 animate-bounce">
-                <CheckCircle className="w-20 h-20 text-green-500 mb-4" />
-                <div className="relative">
-                  <div className="absolute inset-0 bg-green-400/20 rounded-full animate-ping"></div>
-                  <div className="relative bg-green-100 rounded-full p-4">
-                    <CheckCircle className="w-12 h-12 text-green-600" />
-                  </div>
-                </div>
-              </div>
-
               {/* Main Thank You Message */}
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 max-w-3xl">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600">

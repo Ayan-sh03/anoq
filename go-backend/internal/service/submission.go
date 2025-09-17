@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"net"
 
 	"anoq/internal/models"
@@ -23,6 +24,7 @@ func NewSubmissionService(repo *repository.SubmissionRepository, formRepo *repos
 func (s *SubmissionService) SubmitForm(slug string, input *models.FilledFormInput, ipAddress string) (*models.FilledForm, error) {
 	// Get form
 	form, err := s.formRepo.GetBySlug(slug)
+	log.Println("Form fetched for slug:", slug, "Form:", form)
 	if err != nil {
 		return nil, fmt.Errorf("error getting form: %w", err)
 	}

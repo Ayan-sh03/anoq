@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"net"
+	"time"
+)
 
 type Form struct {
 	ID              int                      `json:"id"`
@@ -51,7 +54,7 @@ type FilledForm struct {
 	FormID        int            `json:"form_id"`
 	Name          string         `json:"name"`
 	Email         string         `json:"email"`
-	UserIP        string         `json:"user_ip"`
+	UserIP        net.IP         `json:"user_ip"`
 	SubmittedAt   time.Time      `json:"submitted_at"`
 	Answers       []Answer       `json:"answers,omitempty"`
 	ChoiceAnswers []ChoiceAnswer `json:"choice_answers,omitempty"`

@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 async function checkAuth() {
   try {
     const cookieStore = cookies();
-    const accessToken = cookieStore.get("access_token");
+    const accessToken = (await cookieStore).get("access_token");
 
     if (!accessToken) {
       return false;
@@ -55,7 +55,7 @@ export default async function Home() {
             {isAuthenticated ? (
               <>
                 <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dashboard</Link>
-                <Link href="/api/auth/logout">
+                <Link href="/logout">
                   <Button variant="ghost" className="rounded-full px-5 text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition">Log Out</Button>
                 </Link>
               </>
@@ -86,7 +86,7 @@ export default async function Home() {
                   <span className="text-gray-800">anonymous feedback</span>
                   <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 400 30" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 26c32.14-10.91 79.1-18.19 139.8-6.54 82.93 15.94 119.18-7.99 237.89-14.57"
-                      stroke="url(#gradient)" strokeWidth="8" strokeLinecap="round" fill="none"/>
+                      stroke="url(#gradient)" strokeWidth="8" strokeLinecap="round" fill="none" />
                     <defs>
                       <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="#818cf8" />

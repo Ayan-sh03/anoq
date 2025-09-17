@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const formId = params.id;
+    const { id } = await params;
+    console.log("Checking submission for form ID:", id);
+    const formId = id;
 
     if (!formId) {
       return NextResponse.json({ error: 'Form ID is required' }, { status: 400 });
@@ -25,7 +27,6 @@ export async function GET(
         headers: {
           'Content-Type': 'application/json',
         },
-        cache: 'no-store', // Disable caching for submission check
       }
     );
 

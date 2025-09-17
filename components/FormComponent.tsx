@@ -22,12 +22,12 @@ export interface Form {
   id: string;
   title: string;
   description: string;
-  question: Question[];
-  choiceQuestion: ChoiceQuestion[];
+  questions: Question[];
+  choiceQuestions: ChoiceQuestion[];
 }
 
 interface FormComponentProps {
-  data: Form[];
+  data: Form;
   slug: string;
 }
 
@@ -90,9 +90,9 @@ const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
   useEffect(() => {
     //check if user already submitted
 
-    const initialQuestionValues: Question[] = data[0]?.question || [];
+    const initialQuestionValues: Question[] = data.questions || [];
     const initialChoiceQuestionValues: ChoiceQuestion[] =
-      data[0]?.choiceQuestion.map((question) => ({
+      data.choiceQuestions?.map((question) => ({
         ...question,
         choices: [...new Set(question.choices)],
         selectedChoice: "",
@@ -194,101 +194,99 @@ const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
     <div
       className={`container ${poppins.className} py-3 xl:px-16 max-h-screen overflow-scroll`}
     >
-      {data.map((form: Form, index: number) => (
-        <form key={index} method="post" onSubmit={handleSubmit}>
-          <h1 className="text-3xl text-balance md:text-5xl my-3 font-semibold text-center ">
-            {form.title}
-          </h1>
-          <p className="text-xl  ">{form.description}</p>
+      <form key={data.id} method="post" onSubmit={handleSubmit}>
+        <h1 className="text-3xl text-balance md:text-5xl my-3 font-semibold text-center ">
+          {data.title}
+        </h1>
+        <p className="text-xl  ">{data.description}</p>
 
-          <Label
-            className="text-lg sm:text-md font-semibold first-letter:capitalize"
-            htmlFor="name"
-          >
-            Name
-          </Label>
-          <Input
-            type="text"
-            id="name"
-            name="name"
-            disabled={isLoading}
-            placeholder="Your name"
-            onChange={({ target }) => setName(target.value)}
-          />
+        <Label
+          className="text-lg sm:text-md font-semibold first-letter:capitalize"
+          htmlFor="name"
+        >
+          Name
+        </Label>
+        <Input
+          type="text"
+          id="name"
+          name="name"
+          disabled={isLoading}
+          placeholder="Your name"
+          onChange={({ target }) => setName(target.value)}
+        />
 
-          <Label
-            className="text-lg sm:text-md font-semibold first-letter:capitalize"
-            htmlFor="email"
-          >
-            Email
-          </Label>
-          <Input
-            type="email"
-            id="email"
-            name="email"
-            disabled={isLoading}
-            placeholder="Your email"
-            onChange={({ target }) => setEmail(target.value)}
-          />
+        <Label
+          className="text-lg sm:text-md font-semibold first-letter:capitalize"
+          htmlFor="email"
+        >
+          Email
+        </Label>
+        <Input
+          type="email"
+          id="email"
+          name="email"
+          disabled={isLoading}
+          placeholder="Your email"
+          onChange={({ target }) => setEmail(target.value)}
+        />
 
-          {form.question.map((question, qIndex) => (
-            <div key={qIndex} className="flex flex-col gap-2 my-3">
-              <Label
-                className="text-lg sm:text-md font-semibold first-letter:capitalize"
-                htmlFor={`question_${qIndex}`}
+        {data.questions?.map((question, qIndex) => (
+          <div key={qIndex} className="flex flex-col gap-2 my-3">
+            <Label
+              className="text-lg sm:text-md font-semibold first-letter:capitalize"
+              htmlFor={`question_${qIndex}`}
+            >
+              {question.question_text}
+            </Label>
+            <Input
+              type="text"
+              disabled={isLoading}
+              id={`question_${qIndex}`}
+              name={`question_${qIndex}`}
+              placeholder="Your answer"
+              onChange={(e) => handleQuestionChange(e, qIndex)}
+              value={questionValues[qIndex]?.answer || ""}
+            />
+          </div>
+        ))}
+        {data.choiceQuestions?.map((choiceQuestion, cIndex) => (
+          <div key={cIndex} className="my-3">
+            <Label className="text-lg sm:text-md font-semibold">
+              {choiceQuestion.question_text}
+            </Label>
+            {choiceQuestion.choices.map((choice, choiceIndex) => (
+              <div
+                key={choiceIndex}
+                className="flex flex-row gap-2 my-3 items-center "
               >
-                {question.question_text}
-              </Label>
-              <Input
-                type="text"
-                disabled={isLoading}
-                id={`question_${qIndex}`}
-                name={`question_${qIndex}`}
-                placeholder="Your answer"
-                onChange={(e) => handleQuestionChange(e, qIndex)}
-                value={questionValues[qIndex]?.answer || ""}
-              />
-            </div>
-          ))}
-          {form.choiceQuestion.map((choiceQuestion, cIndex) => (
-            <div key={cIndex} className="my-3">
-              <Label className="text-lg sm:text-md font-semibold">
-                {choiceQuestion.question_text}
-              </Label>
-              {choiceQuestion.choices.map((choice, choiceIndex) => (
-                <div
-                  key={choiceIndex}
-                  className="flex flex-row gap-2 my-3 items-center "
+                <Input
+                  type="checkbox"
+                  className="size-5"
+                  disabled={isLoading}
+                  key={`checkbox_${choiceIndex}`}
+                  id={`choicequestion_${cIndex}_choice_${choiceIndex}`}
+                  name={`choicequestion_${cIndex}`}
+                  value={choice}
+                  onChange={(e) =>
+                    handleChoiceQuestionChange(e, cIndex, choiceIndex)
+                  }
+                  checked={
+                    choiceQuestionValues[cIndex]?.selectedChoice === choice
+                  }
+                />
+                <Label
+                  htmlFor={`choicequestion_${cIndex}_choice_${choiceIndex}`}
                 >
-                  <Input
-                    type="checkbox"
-                    className="size-5"
-                    disabled={isLoading}
-                    key={`checkbox_${choiceIndex}`}
-                    id={`choicequestion_${cIndex}_choice_${choiceIndex}`}
-                    name={`choicequestion_${cIndex}`}
-                    value={choice}
-                    onChange={(e) =>
-                      handleChoiceQuestionChange(e, cIndex, choiceIndex)
-                    }
-                    checked={
-                      choiceQuestionValues[cIndex]?.selectedChoice === choice
-                    }
-                  />
-                  <Label
-                    htmlFor={`choicequestion_${cIndex}_choice_${choiceIndex}`}
-                  >
-                    {choice}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          ))}
-          <Button disabled={isLoading} type="submit">
-            Submit
-          </Button>
-        </form>
-      ))}
+                  {choice}
+                </Label>
+              </div>
+            ))}
+          </div>
+        ))}
+        <Button disabled={isLoading} type="submit">
+          Submit
+        </Button>
+      </form>
     </div>
   );
 };

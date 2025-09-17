@@ -12,9 +12,9 @@ import { CardComponent } from "@/components/CardComponent";
 export default async function Submission({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const slug = params.slug;
+  const { slug } = await params;
   const res = await fetch(`/api/form/submissions/${slug}`, {
     credentials: "include", // Include cookies for authentication
     cache: "no-store",

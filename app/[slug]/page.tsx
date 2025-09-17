@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import { notFound } from "next/navigation";
 
 export async function getData(slug: string) {
-  const response = await fetch(`/api/form/${slug}`, {
+  const response = await fetch(`${process.env.URL}/api/form/${slug}`, {
     cache: "no-store",
   });
   const data = await response.json();
@@ -16,26 +16,29 @@ export async function getData(slug: string) {
 }
 
 async function checkFilled(id: string) {
-  const response = await fetch(`/api/submitted/${id}`, {
+  const response = await fetch(`${process.env.URL}/api/submitted/${id}`, {
     cache: "no-store",
   });
 
   return response;
 }
 
-async function Page({ params }: { params: { slug: string } }) {
-  const data = await getData(params.slug);
+async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const data = await getData(slug);
 
-  if(data[0].status === "closed"){
-    return <Closed/>
-}
+  console.log("Data:", data);
+  if (data.status === "closed") {
+    return <Closed />
+  }
 
   if (data.length === 0) {
     notFound();
   }
 
-  const res = await checkFilled(data[0].id);
-  const form = await res.json();
+  
+
+  const res = await checkFilled(data.slug);
 
   if (!res.ok) {
     return <AlreadySubmitted />;
@@ -43,8 +46,8 @@ async function Page({ params }: { params: { slug: string } }) {
 
   return (
     <div className="min-h-screen w-full ">
-      <Navbar/>
-      <FormComponent data={data} slug={params.slug} />
+      <Navbar />
+      <FormComponent data={data} slug={slug} />
     </div>
   );
 }

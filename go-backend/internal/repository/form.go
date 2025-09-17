@@ -2,13 +2,13 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"time"
 
 	"anoq/internal/models"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -124,7 +124,7 @@ WHERE f.id = $1`
 		&form.CreatedAt,
 		&form.UpdatedAt,
 	)
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return nil, nil
 	}
 	if err != nil {
@@ -188,7 +188,7 @@ func (r *FormRepository) GetBySlug(slug string) (*models.Form, error) {
 	query := "SELECT id FROM forms WHERE slug = $1"
 	var id int
 	err := r.db.QueryRow(context.Background(), query, slug).Scan(&id)
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return nil, nil
 	}
 	if err != nil {

@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const body = await request.json();
-    const slug = params.slug;
+    const slug = (await params).slug;
 
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/forms/${slug}/submit`, {
       method: 'POST',

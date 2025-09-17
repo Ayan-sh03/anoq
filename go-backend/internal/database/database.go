@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// NewConnection establishes a connection to the PostgreSQL database
-func NewConnection() (*pgx.Conn, error) {
+// NewConnection establishes a connection pool to the PostgreSQL database
+func NewConnection() (*pgxpool.Pool, error) {
 	host := getEnv("DB_HOST", "localhost")
 	port := getEnv("DB_PORT", "5432")
 	user := getEnv("DB_USER", "anoq_user")
@@ -18,13 +18,13 @@ func NewConnection() (*pgx.Conn, error) {
 	dbname := getEnv("DB_NAME", "anoq")
 
 	connStr := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable pool_max_conns=10 pool_min_conns=2 pool_max_conn_lifetime=1h pool_max_conn_idle_time=30m pool_health_check_period=5m",
 		host, port, user, password, dbname,
 	)
 
-	db, err := pgx.Connect(context.Background(), connStr)
+	db, err := pgxpool.New(context.Background(), connStr)
 	if err != nil {
-		return nil, fmt.Errorf("error opening database: %w", err)
+		return nil, fmt.Errorf("error creating connection pool: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

@@ -8,14 +8,14 @@ import (
 
 	"anoq/internal/models"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type SubmissionRepository struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewSubmissionRepository(db *pgx.Conn) *SubmissionRepository {
+func NewSubmissionRepository(db *pgxpool.Pool) *SubmissionRepository {
 	return &SubmissionRepository{
 		db: db,
 	}

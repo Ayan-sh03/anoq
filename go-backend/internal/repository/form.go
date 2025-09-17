@@ -9,14 +9,14 @@ import (
 
 	"anoq/internal/models"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type FormRepository struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewFormRepository(db *pgx.Conn) *FormRepository {
+func NewFormRepository(db *pgxpool.Pool) *FormRepository {
 	return &FormRepository{
 		db: db,
 	}

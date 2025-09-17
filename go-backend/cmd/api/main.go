@@ -29,15 +29,13 @@ func main() {
 		log.Printf("Warning: .env file not found")
 	}
 
-	// Initialize database connection
+	// Initialize database connection pool
 	db, err := database.NewConnection()
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer func() {
-		if err := db.Close(context.Background()); err != nil {
-			log.Printf("Error closing database connection: %v", err)
-		}
+		db.Close()
 	}()
 
 	log.Println("Database connection established")

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"anoq/internal/models"
 
@@ -35,7 +36,7 @@ VALUES ($1, $2, $3, $4)
 RETURNING id, submitted_at`
 
 	var filledFormID int
-	var submittedAt string
+	var submittedAt time.Time
 	err = tx.QueryRow(
 		context.Background(),
 		formQuery,

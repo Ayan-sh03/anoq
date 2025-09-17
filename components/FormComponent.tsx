@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
@@ -8,11 +9,13 @@ import { poppins } from "@/app/fonts";
 import { toast, useToast } from "./ui/use-toast";
 
 interface Question {
+  id: string;
   question_text: string;
   answer?: string;
 }
 
 interface ChoiceQuestion {
+  id: string;
   question_text: string;
   choices: string[];
   selectedChoice?: string;
@@ -78,6 +81,7 @@ const validateChoiceQuestions = (choiceQuestions: ChoiceQuestion[]): void => {
 };
 
 const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
+  const router = useRouter();
   const [questionValues, setQuestionValues] = useState<Question[]>([]);
   const [choiceQuestionValues, setChoiceQuestionValues] = useState<
     ChoiceQuestion[]
@@ -146,9 +150,14 @@ const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
       const formData = {
         name,
         email,
-        slug,
-        question: questionValues,
-        choiceQuestion: choiceQuestionValues,
+        answers: questionValues.map((q, index) => ({
+          question_id: q.id, // Backend expects question ID, assuming 1-based indexing
+          answer: q.answer || ""
+        })),
+        choice_answers: choiceQuestionValues.map((q, index) => ({
+          choice_question_id: q.id, // Backend expects choice question ID
+          selected_choices: q.selectedChoice ? [q.selectedChoice] : []
+        }))
       };
 
       const res = await fetch(`/api/forms/${slug}/submit`, {
@@ -176,6 +185,12 @@ const FormComponent: React.FC<FormComponentProps> = ({ data, slug }) => {
         description: "Thank you for submitting your response",
         variant: "success",
       });
+
+      // Navigate to thank you page after successful submission
+      setTimeout(() => {
+        router.push('/thank-you');
+      }, 1500); // Wait 1.5 seconds for toast to show before navigating
+
       setIsLoading(false);
     } catch (error) {
       // Handle validation errors and display a toast or notification

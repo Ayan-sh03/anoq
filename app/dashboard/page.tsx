@@ -138,6 +138,8 @@ function Dashboard({ data }: { data: any[] }) {
                     description={form.description}
                     slug={form.slug}
                     status={form.status}
+                    submissionCount={form.submissionCount}
+                    lastSubmission={form.lastSubmission}
                   />
                 );
               })}

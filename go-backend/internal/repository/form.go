@@ -321,7 +321,9 @@ func (r *FormRepository) GetFormsByUserID(userID int) ([]models.Form, error) {
 	forms := []models.Form{}
 
 	query := `
-	SELECT f.id, f.title, f.description, f.slug, f.author_id, f.status, f.created_at, f.updated_at
+	SELECT f.id, f.title, f.description, f.slug, f.author_id, f.status, f.created_at, f.updated_at,
+	       (SELECT COUNT(*) FROM filled_forms ff WHERE ff.form_id = f.id) as submission_count,
+	       (SELECT MAX(ff.submitted_at) FROM filled_forms ff WHERE ff.form_id = f.id) as last_submission
 	FROM forms f
 	WHERE f.author_id = $1
 	ORDER BY f.created_at DESC`
@@ -343,6 +345,8 @@ func (r *FormRepository) GetFormsByUserID(userID int) ([]models.Form, error) {
 			&form.Status,
 			&form.CreatedAt,
 			&form.UpdatedAt,
+			&form.SubmissionCount,
+			&form.LastSubmission,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning form: %w", err)

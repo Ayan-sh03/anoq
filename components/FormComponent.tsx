@@ -27,6 +27,8 @@ export interface Form {
   description: string;
   questions: Question[];
   choiceQuestions: ChoiceQuestion[];
+  submissionCount: number;
+  lastSubmission: string | null;
 }
 
 interface FormComponentProps {

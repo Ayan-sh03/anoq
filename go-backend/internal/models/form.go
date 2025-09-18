@@ -16,6 +16,8 @@ type Form struct {
 	UpdatedAt       time.Time                `json:"updated_at"`
 	Questions       []Question               `json:"questions,omitempty"`
 	ChoiceQuestions []MultipleChoiceQuestion `json:"choice_questions,omitempty"`
+	SubmissionCount int                      `json:"submission_count"`
+	LastSubmission  *time.Time               `json:"last_submission"`
 }
 
 type FormInput struct {

@@ -22,29 +22,55 @@ import {
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
+function timeAgo(date: string | null): string {
+  if (!date) {
+    return "No submissions yet";
+  }
+
+  const now = new Date();
+  const past = new Date(date);
+  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+  const intervals = {
+    year: 31536000,
+    month: 2592000,
+    week: 604800,
+    day: 86400,
+    hour: 3600,
+    minute: 60,
+  };
+
+  if (diffInSeconds < 60) return "just now";
+
+  for (const [unit, seconds] of Object.entries(intervals)) {
+    const interval = Math.floor(diffInSeconds / seconds);
+    if (interval >= 1) {
+      return `${interval} ${unit}${interval > 1 ? "s" : ""} ago`;
+    }
+  }
+  return "just now";
+}
+
+
 const FormCard = ({
   title,
   description,
   slug,
   status,
+  submissionCount,
+  lastSubmission,
 }: {
   title: string;
   description: string;
   slug: string;
   status: string;
+  submissionCount: number;
+  lastSubmission: string | null;
 }) => {
 
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
-  const [submissionCount, setSubmissionCount] = useState(0);
-  const [lastSubmission, setLastSubmission] = useState("");
 
-  // Simulate fetching submission data
-  useEffect(() => {
-    // This would be replaced with actual API call
-    setSubmissionCount(Math.floor(Math.random() * 150) + 10);
-    setLastSubmission("2 hours ago");
-  }, [slug]);
   async function toggleStatus(slug: string, status: string) {
     if (status === "closed") {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/form/open/${slug}`, {
@@ -100,7 +126,7 @@ const FormCard = ({
             </div>
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Calendar className="w-3 h-3" />
-              <span>{lastSubmission}</span>
+              <span>{timeAgo(lastSubmission)}</span>
             </div>
             <div className={`flex items-center gap-1 text-xs ${status === 'open' ? 'text-green-600' : 'text-orange-600'}`}>
               {status === 'open' ? <Sparkles className="w-3 h-3" /> : <Lock className="w-3 h-3" />}

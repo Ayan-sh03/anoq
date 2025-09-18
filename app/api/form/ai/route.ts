@@ -11,7 +11,7 @@ interface AIFormInput {
 export async function POST(request: NextRequest) {
   try {
     // Get access token from cookies
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const accessToken = cookieStore.get("access_token");
 
     if (!accessToken) {

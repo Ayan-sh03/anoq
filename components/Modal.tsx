@@ -8,14 +8,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { MultipleChoiceQuestion, Question } from "@/dbschema/interfaces";
+import type { ChoiceQuestion, Question } from "./FormComponent";
 
 export function DialogForm({
   questions,
   choiceQuestions,
 }: {
   questions: Question[];
-  choiceQuestions: MultipleChoiceQuestion[];
+  choiceQuestions: ChoiceQuestion[];
 }) {
   return (
     <Dialog>
@@ -47,19 +47,19 @@ export function DialogForm({
           </div>
 
           <div>
-              {choiceQuestions.map((questions, index) => {
-                return (
-                  <div key={index} className="flex flex-col items-start gap-1 ">
-                    <Label
-                      htmlFor="name"
-                      className="text-right text-wrap text-lg first-letter:Capitalize font-bold"
-                    >
-                      {questions.question_text}
-                    </Label>
-                    <p className="text-md">{questions.selectedChoice}</p>
-                  </div>
-                );
-              })}
+            {choiceQuestions.map((questions, index) => {
+              return (
+                <div key={index} className="flex flex-col items-start gap-1 ">
+                  <Label
+                    htmlFor="name"
+                    className="text-right text-wrap text-lg first-letter:Capitalize font-bold"
+                  >
+                    {questions.question_text}
+                  </Label>
+                  <p className="text-md">{questions.selectedChoice}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </DialogContent>

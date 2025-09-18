@@ -36,11 +36,11 @@ export default function ThankYouPage() {
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-10 max-w-2xl border border-indigo-100 shadow-lg">
                 <div className="flex items-center gap-3 mb-3">
                   <Sparkles className="w-5 h-5 text-yellow-500" />
-                  <h3 className="text-lg font-semibold text-gray-800">What's Next?</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">What&apos;s Next?</h3>
                 </div>
                 <p className="text-gray-600 text-left">
                   Your feedback has been securely stored and will be reviewed by our team.
-                  Since this is anonymous, you won't receive a direct response, but your input
+                  Since this is anonymous, you won&apos;t receive a direct response, but your input
                   will directly influence our product decisions.
                 </p>
               </div>

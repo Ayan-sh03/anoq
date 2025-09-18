@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const slug = params.id;
+    const { id: slug } = await params;
 
     if (!slug) {
       return NextResponse.json({ error: 'slug is required' }, { status: 400 });

@@ -187,7 +187,7 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
           <p className="text-sm text-gray-600">
             {mode === 'login' ? (
               <>
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
                   Register here
                 </Link>

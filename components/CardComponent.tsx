@@ -1,15 +1,13 @@
-import { MoveHorizontalIcon } from "lucide-react";
-import { Button } from "./ui/button";
-import { Card, CardContent, CardFooter } from "./ui/card";
-import { MultipleChoiceQuestion, Question } from "@/dbschema/interfaces";
+import type { ChoiceQuestion, Question } from "./FormComponent";
 import { DialogForm } from "./Modal";
+import { Card, CardContent, CardFooter } from "./ui/card";
 
-interface CardProps{
-    name? : string
-    email? : string
-    comment? : string
-    questions : Question[]
-    choiceQuesions : MultipleChoiceQuestion[]
+interface CardProps {
+    name?: string
+    email?: string
+    comment?: string
+    questions: Question[]
+    choiceQuesions: ChoiceQuestion[]
 }
 
 export async function CardComponent(card: CardProps) {
@@ -28,12 +26,12 @@ export async function CardComponent(card: CardProps) {
             <p className="text-gray-700 dark:text-gray-300">
                 {card.comment}
             </p>
-        
+
         </CardContent>
         <CardFooter className="flex justify-end relative z-10">
-        <DialogForm questions={card.questions}  choiceQuestions={card.choiceQuesions}/>
-        
-        
+            <DialogForm questions={card.questions} choiceQuestions={card.choiceQuesions} />
+
+
         </CardFooter>
     </Card>;
 }

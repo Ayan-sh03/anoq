@@ -105,7 +105,7 @@ function Dashboard({ data }: { data: any[] }) {
 
                 {/* Subheading */}
                 <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-lg mx-auto">
-                  Start collecting anonymous feedback by creating your first form. It's quick, easy, and your users will love the anonymity.
+                  Start collecting anonymous feedback by creating your first form. It&apos;s quick, easy, and your users will love the anonymity.
                 </p>
 
                 {/* CTA Buttons */}

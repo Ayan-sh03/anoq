@@ -3,11 +3,11 @@ import { cookies } from 'next/headers';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const slug = params.slug;
-    const cookieStore = cookies();
+    const { slug } = await params;
+    const cookieStore = await cookies();
     const accessToken = cookieStore.get("access_token");
 
     if (!accessToken) {

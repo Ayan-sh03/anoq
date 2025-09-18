@@ -8,13 +8,13 @@ import { Button } from "./ui/button";
 import { poppins } from "@/app/fonts";
 import { toast, useToast } from "./ui/use-toast";
 
-interface Question {
+export interface Question {
   id: string;
   question_text: string;
   answer?: string;
 }
 
-interface ChoiceQuestion {
+export interface ChoiceQuestion {
   id: string;
   question_text: string;
   choices: string[];

@@ -11,6 +11,17 @@ export interface User {
   created_at: string;
 }
 
+export interface Question {
+  question_text: string;
+  answer_text: string;
+}
+
+export interface MultipleChoiceQuestionInput {
+  question_text: string;
+  choices: string[];
+}
+
+
 export interface AuthTokens {
   access_token: string;
   refresh_token: string;

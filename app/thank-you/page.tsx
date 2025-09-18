@@ -13,23 +13,6 @@ export default function ThankYouPage() {
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        {/* Navigation Bar - matching landing page */}
-        <nav className="py-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="relative w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">A</div>
-            <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 text-xl">Anoq</span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dashboard</Link>
-            <Link href="/create">
-              <Button className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-5 shadow-md hover:shadow-lg transition-all duration-300">
-                Create Form
-              </Button>
-            </Link>
-          </div>
-        </nav>
-
         {/* Thank You Content */}
         <main className="pt-20 pb-24">
           <div className="max-w-4xl mx-auto">

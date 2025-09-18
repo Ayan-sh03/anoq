@@ -77,7 +77,7 @@ function Dashboard({ data }: { data: any[] }) {
         <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 p-4 md:gap-8 md:p-10">
           <div className="max-w-6xl w-full mx-auto flex items-center gap-4">
             <Link href="/create">
-              <Button className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 shadow-md hover:shadow-lg transition-all duration-300">
+              <Button className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 shadow-md hover:shadow-lg hover:translate-y-[-1px] transition-all duration-300">
                 <Plus className="w-4 h-4 mr-2" />
                 Create New Form
               </Button>

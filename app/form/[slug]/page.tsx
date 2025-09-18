@@ -15,7 +15,7 @@ export default async function Submission({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const res = await fetch(`/api/form/submissions/${slug}`, {
+  const res = await fetch(`${process.env.URL}/api/form/submissions/${slug}`, {
     credentials: "include", // Include cookies for authentication
     cache: "no-store",
   });
@@ -23,55 +23,80 @@ export default async function Submission({
   const data = await res.json();
 
   return (
-    <main className="container h-screen  mx-auto px-4 py-8 md:px-6 lg:px-8">
-      <div className="flex flex-col items-center justify-between mb-8 md:flex-row">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Form Submissions</h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            View and manage All submissions.
-          </p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
-            <Input
-              className="pl-10 pr-4 py-2 rounded-md border border-gray-200 dark:border-gray-800 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary"
-              placeholder="Search submissions..."
-              type="text"
-            />
+    <div className="relative min-h-screen bg-gradient-to-b from-indigo-50 via-white to-purple-50 overflow-hidden">
+      {/* Background decorative elements - matching landing page theme */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-purple-200/30 blur-3xl"></div>
+        <div className="absolute top-1/3 -left-20 w-72 h-72 rounded-full bg-blue-200/30 blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-teal-200/20 blur-3xl"></div>
+      </div>
+
+      <main className="container min-h-screen mx-auto px-4 py-8 md:px-6 lg:px-8 relative z-10">
+        <div className="flex flex-col items-center justify-between mb-8 md:flex-row">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+              Form Submissions
+            </h1>
+            <p className="text-gray-600">
+              View and manage all submissions.
+            </p>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="icon" variant="outline">
-                <ListOrderedIcon className="w-5 h-5" />
-                <span className="sr-only">Sort</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={8}>
-              <DropdownMenuRadioGroup value="date">
-                <DropdownMenuRadioItem value="date">Date</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="rating">
-                  Rating
-                </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+              <Input
+                className="pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white/90 shadow-sm hover:shadow-md transition-all duration-300"
+                placeholder="Search submissions..."
+                type="text"
+              />
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="icon" variant="outline" className="rounded-full bg-white/90 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-all duration-300">
+                  <ListOrderedIcon className="w-5 h-5" />
+                  <span className="sr-only">Sort</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" sideOffset={8} className="bg-white/95 backdrop-blur-sm border-gray-200 shadow-lg">
+                <DropdownMenuRadioGroup value="date">
+                  <DropdownMenuRadioItem value="date" className="hover:bg-indigo-50 focus:bg-indigo-100 transition-colors duration-200">
+                    Date
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="rating" className="hover:bg-indigo-50 focus:bg-indigo-100 transition-colors duration-200">
+                    Rating
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
 
-
-      {data && data.length > 0 ? (<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {data?.map(async (item: any, index: number) => (
-          <CardComponent email={item.email} name={item.name} key={index}  questions={item.question} choiceQuesions={item.choiceQuestion} />
-        ))}
-      </div>
-):(
-  <>
-    <h2 className="text-xl">No Submissions!</h2>
-  </>
-)}
-
-    </main>
+        {data && data.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {data?.map(async (item: any, index: number) => (
+              <CardComponent email={item.email} name={item.name} key={index} questions={item.question} choiceQuesions={item.choiceQuestion} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center mt-20">
+            <div className="relative inline-block mb-8">
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full blur-xl opacity-30"></div>
+              <div className="relative bg-white rounded-full p-6 shadow-lg">
+                <svg className="w-16 h-16 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-2">
+              No Submissions Yet
+            </h2>
+            <p className="text-gray-600 text-center max-w-md">
+              When users start submitting your form, their responses will appear here.
+            </p>
+          </div>
+        )}
+      </main>
+    </div>
   );
 
   function ListOrderedIcon(props: HTMLOrSVGElement | SVGProps<SVGSVGElement>) {

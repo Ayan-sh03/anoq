@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/lib/auth/context";
+import Navbar from "@/components/Navbar";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -22,7 +23,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <main className="z-10">{children}</main>
+          <Navbar />
+          <main className="min-h-screen">{children}</main>
           <Toaster />
         </AuthProvider>
       </body>

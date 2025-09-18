@@ -44,34 +44,8 @@ export default async function Home() {
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        {/* Navigation Bar */}
-        <nav className="py-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="relative w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">A</div>
-            <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 text-xl">Anoq</span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dashboard</Link>
-                <Link href="/logout">
-                  <Button variant="ghost" className="rounded-full px-5 text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition">Log Out</Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dashboard</Link>
-                <Link href="/login">
-                  <Button className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-5 shadow-md hover:shadow-lg transition-all duration-300">Join Now</Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </nav>
-
-        {/* Hero Section */}
-        <main className="pt-12 pb-24">
+        {/* Hero Section - now starts directly since navbar is global */}
+        <main className="pt-24 pb-24">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col items-center text-center">
 

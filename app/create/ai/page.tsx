@@ -1,6 +1,5 @@
 "use client";
 import Loading from "@/app/Loading";
-import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,14 +76,12 @@ export default function CreateAI() {
           Visit your form on {process.env.NEXT_PUBLIC_API_URL}/{data.slug}
         </Link>
       ),
-      variant: "success",
     });
 
     setPending(false);
   }
   return (
     <div className="overflow-hidden h-screen">
-      <Navbar />
       <div className="flex flex-col items-center justify-center h-full    bg-gray-100 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl w-full">
           <div className="space-y-6">

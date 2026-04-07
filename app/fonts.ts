@@ -1,22 +1,22 @@
-import { Poppins } from "next/font/google"
-import { Arimo } from 'next/font/google'
-import { Rubik } from 'next/font/google'
+import { Outfit, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 
+export const poppins = Outfit({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-outfit",
+  display: "swap",
+});
 
+export const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
 
-export const poppins  = Poppins({
-    subsets: ["latin"],
-    weight: ["100","200","300","500","700","800"]
-  })
-
-
-export const arimo = Arimo({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-arimo',
-})
-export const rubik = Rubik({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-rubik',
-})
+export const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});

@@ -1,104 +1,114 @@
-import { Sparkles, Lock, BarChart2, MessageSquare, Shield, Users } from "lucide-react";
+import { Sparkles, Lock, BarChart2, MessageSquare, Shield, Users, ArrowRight } from "lucide-react";
+import Link from "next/link";
+
+const features = [
+  {
+    icon: Lock,
+    title: "Total Anonymity",
+    description: "No user data is stored. Feedback is completely untraceable, ensuring genuine responses.",
+  },
+  {
+    icon: Sparkles,
+    title: "AI-Powered Insights",
+    description: "Our AI analyzes feedback to highlight key trends and sentiment, saving you hours of manual review.",
+  },
+  {
+    icon: BarChart2,
+    title: "Real-Time Analytics",
+    description: "Track feedback trends with live dashboards and customizable reports.",
+  },
+  {
+    icon: Shield,
+    title: "Secure & Encrypted",
+    description: "All data is end-to-end encrypted, so even we can't read your feedback.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Customizable Forms",
+    description: "Design feedback forms that match your brand and collect exactly what you need.",
+  },
+  {
+    icon: Users,
+    title: "Team Collaboration",
+    description: "Share insights with your team and assign action items directly from feedback.",
+  },
+];
 
 export default function FeaturesPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-900 to-indigo-900 overflow-hidden relative">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-600 blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-indigo-600 blur-[120px] animate-pulse delay-300"></div>
+    <div className="relative overflow-hidden bg-secondary/30">
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/4 w-[400px] h-[400px] rounded-full bg-gradient-to-br from-slate-700/30 to-slate-800/10 blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-gradient-to-br from-teal-900/20 to-slate-900/10 blur-[100px]" />
       </div>
 
-      {/* Features Section */}
       <main className="container mx-auto px-6 py-24 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
-            <span className="inline-block px-4 py-1.5 text-sm font-medium bg-white/10 text-white rounded-full backdrop-blur-sm border border-white/10 mb-4">
-              ✨ Why Anoq?
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium bg-secondary text-foreground rounded-full border border-border mb-6">
+              <Sparkles className="w-4 h-4 text-primary" />
+              Why Choose Anoq?
             </span>
-            <h2 className="text-5xl font-bold text-white leading-tight mb-6">
-              Get <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-300">honest feedback</span>,<br />
-              without the <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-300 to-indigo-300">fear of bias</span>.
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6">
+              Honest feedback,{' '}
+              <span className="text-primary">
+                no bias.
+              </span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Anoq ensures <strong>100% anonymity</strong>, so you receive <strong>raw, unfiltered insights</strong> to improve your product.
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Anoq ensures <strong className="text-foreground">100% anonymity</strong>, so you receive{' '}
+              <strong className="text-foreground">raw, unfiltered insights</strong> to improve your product.
             </p>
           </div>
 
-          {/* Feature Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1: Total Anonymity */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all hover:shadow-lg hover:shadow-purple-500/20">
-              <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mb-4">
-                <Lock className="w-6 h-6 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature, index) => (
+              <div 
+                key={index}
+                className="group p-8 rounded-2xl bg-card/50 border border-border hover:border-primary/30 transition-all duration-200"
+              >
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:scale-105 transition-transform duration-200">
+                  <feature.icon className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-foreground mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Total Anonymity</h3>
-              <p className="text-gray-300">
-                No user data is stored. Feedback is <strong>completely untraceable</strong>, ensuring genuine responses.
-              </p>
-            </div>
+            ))}
+          </div>
 
-            {/* Feature 2: AI-Powered Insights */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all hover:shadow-lg hover:shadow-purple-500/20">
-              <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mb-4">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">AI-Powered Insights</h3>
-              <p className="text-gray-300">
-                Our AI analyzes feedback to highlight <strong>key trends & sentiment</strong>, saving you hours of manual review.
+          <div className="mt-20 text-center">
+            <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-8 rounded-2xl bg-card/50 border border-border">
+              <p className="text-foreground/80">
+                Ready to get started?
               </p>
-            </div>
-
-            {/* Feature 3: Real-Time Analytics */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all hover:shadow-lg hover:shadow-purple-500/20">
-              <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mb-4">
-                <BarChart2 className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Real-Time Analytics</h3>
-              <p className="text-gray-300">
-                Track feedback trends with <strong>live dashboards</strong> and customizable reports.
-              </p>
-            </div>
-
-            {/* Feature 4: Secure & Encrypted */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all hover:shadow-lg hover:shadow-purple-500/20">
-              <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mb-4">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Secure & Encrypted</h3>
-              <p className="text-gray-300">
-                All data is <strong>end-to-end encrypted</strong>, so even we can&apos;t read your feedback.
-              </p>
-            </div>
-
-            {/* Feature 5: Customizable Forms */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all hover:shadow-lg hover:shadow-purple-500/20">
-              <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mb-4">
-                <MessageSquare className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Customizable Forms</h3>
-              <p className="text-gray-300">
-                Design feedback forms that match <strong>your brand</strong> and collect exactly what you need.
-              </p>
-            </div>
-
-            {/* Feature 6: Team Collaboration */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all hover:shadow-lg hover:shadow-purple-500/20">
-              <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mb-4">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Team Collaboration</h3>
-              <p className="text-gray-300">
-                Share insights with your team and <strong>assign action items</strong> directly from feedback.
-              </p>
+              <Link href="/create">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm group">
+                  Create Your First Form
+                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Floating Animated Shapes */}
-      <div className="absolute top-20 right-20 w-16 h-16 rounded-full bg-purple-500/30 blur-xl animate-float"></div>
-      <div className="absolute bottom-40 left-20 w-24 h-24 rounded-full bg-pink-500/30 blur-xl animate-float-delay"></div>
+      <div className="absolute top-20 right-20 w-16 h-16 rounded-full bg-gradient-to-br from-slate-600/30 to-slate-700/20 blur-xl animate-float" />
+      <div className="absolute bottom-40 left-20 w-24 h-24 rounded-full bg-gradient-to-br from-teal-700/20 to-slate-800/20 blur-xl animate-float-delay" />
     </div>
+  );
+}
+
+function Button({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string }) {
+  return (
+    <button
+      className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
   );
 }

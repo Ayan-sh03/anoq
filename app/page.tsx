@@ -2,7 +2,7 @@ import FeaturesPage from "@/components/Features";
 import { Button } from "@/components/ui/button";
 import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Shield, Zap, BarChart2, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default async function Home() {
@@ -11,75 +11,104 @@ export default async function Home() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-900 to-indigo-900 overflow-hidden relative">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-600 blur-[100px] animate-pulse"></div>
-          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-indigo-600 blur-[120px] animate-pulse delay-300"></div>
+      <div className="min-h-screen overflow-hidden relative">
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-slate-700/40 to-slate-800/20 blur-[120px]" />
+          <div className="absolute bottom-1/3 -right-20 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-teal-900/30 to-slate-900/20 blur-[120px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-gradient-to-br from-slate-800/20 to-transparent blur-[150px]" />
         </div>
-        {/* Navigation */}
+
         <nav className="container mx-auto px-6 py-6 flex items-center z-10 relative">
-          <Link href="/" className="font-bold text-3xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300 hover:from-pink-300 hover:to-purple-400 transition-all">
-            Anoq
+          <Link href="/" className="font-display text-3xl font-bold tracking-tight">
+            <span className="text-foreground">
+              Anoq
+            </span>
           </Link>
-          <div className="ml-auto flex items-center space-x-3">
+          
+          <div className="ml-auto flex items-center gap-2">
             {authenticated ? (
               <LogoutLink postLogoutRedirectURL="/">
-                <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm">
+                <Button variant="ghost" className="text-foreground/70 hover:text-foreground hover:bg-secondary">
                   Sign Out
                 </Button>
               </LogoutLink>
             ) : (
               <LoginLink postLoginRedirectURL="/">
-                <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-white/10 backdrop-blur-sm">
+                <Button variant="ghost" className="text-foreground/70 hover:text-foreground hover:bg-secondary">
                   Sign In
                 </Button>
               </LoginLink>
             )}
             <Link href="/dashboard">
-              <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-purple-500/30 transition-all transform hover:scale-105">
-                Dashboard <ArrowRight className="ml-2 w-4 h-4" />
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-200 group">
+                Dashboard
+                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
           </div>
         </nav>
-        {/* Hero Section */}
-        <main className="container mx-auto px-6 py-24 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="mb-4">
-              <span className="inline-block px-4 py-1.5 text-sm font-medium bg-white/10 text-white rounded-full backdrop-blur-sm border border-white/10">
-                🚀 Anonymous Feedback, Zero Fear
+
+        <main className="container mx-auto px-6 relative z-10">
+          <div className="max-w-5xl mx-auto text-center pt-20 pb-32">
+            <div className="mb-8 opacity-0 animate-slide-up">
+              <span className="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-full bg-secondary text-foreground border border-border">
+                <Zap className="w-4 h-4 text-primary" />
+                Zero Fear, 100% Anonymous
               </span>
             </div>
-            <h1 className="text-6xl font-bold text-white leading-tight mb-6">
-              Speak <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-300">freely.</span><br />
-              Grow <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-300 to-indigo-300">fearlessly.</span>
+            
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-8 opacity-0 animate-slide-up stagger-1">
+              <span className="text-foreground">Speak freely.</span>
+              <br />
+              <span className="text-primary">Grow fearlessly.</span>
             </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
-              Anoq lets users share <strong>100% anonymous</strong> feedback—so you get the <strong>raw, unfiltered truth</strong> to improve your product.
+            
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed opacity-0 animate-slide-up stagger-2">
+              Anoq lets users share <span className="text-foreground font-medium">100% anonymous</span> feedback—so you get the <span className="text-foreground font-medium">raw, unfiltered truth</span> to build better products.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
+            
+            <div className="flex flex-col sm:flex-row justify-center gap-4 opacity-0 animate-slide-up stagger-3">
               <Link href="/create">
-                <Button className="px-8 py-5 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-xl hover:shadow-purple-600/40 transition-all transform hover:scale-105 group">
+                <Button size="lg" className="px-8 py-6 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-200 group w-full sm:w-auto">
                   Start Collecting Feedback
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
               <Link href="/create/ai">
-                <Button variant="outline" className="px-8 py-5 text-lg border-white/30 text-purple-300 hover:bg-white/10 hover:text-white backdrop-blur-sm flex items-center gap-2 group">
-                  <Sparkles className="w-5 h-5 group-hover:animate-pulse" />
+                <Button size="lg" variant="outline" className="px-8 py-6 text-lg border-foreground/20 text-foreground hover:bg-secondary group w-full sm:w-auto">
+                  <Zap className="mr-2 w-5 h-5 text-primary" />
                   AI-Powered Setup
                 </Button>
-
               </Link>
+            </div>
+
+            <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto opacity-0 animate-slide-up stagger-4">
+              <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card/50 border border-border">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-foreground/80">Complete Anonymity</span>
+              </div>
+              <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card/50 border border-border">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-foreground/80">AI-Powered Insights</span>
+              </div>
+              <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card/50 border border-border">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <BarChart2 className="w-6 h-6 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-foreground/80">Real-Time Analytics</span>
+              </div>
             </div>
           </div>
         </main>
-        {/* Floating Animated Shapes (Decorative) */}
-        <div className="absolute top-20 right-20 w-16 h-16 rounded-full bg-purple-500/30 blur-xl animate-float"></div>
-        <div className="absolute bottom-40 left-20 w-24 h-24 rounded-full bg-pink-500/30 blur-xl animate-float-delay"></div>
+
+        <div className="absolute top-32 right-20 w-20 h-20 rounded-full bg-gradient-to-br from-slate-600/30 to-slate-700/20 blur-xl animate-float opacity-0 animate-fade-in" />
+        <div className="absolute bottom-60 left-20 w-32 h-32 rounded-full bg-gradient-to-br from-teal-700/20 to-slate-800/20 blur-xl animate-float-delay opacity-0 animate-fade-in" />
       </div>
-      <FeaturesPage></FeaturesPage>
+      <FeaturesPage />
     </>
   );
 }

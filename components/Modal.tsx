@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { MultipleChoiceQuestion, Question } from "@/dbschema/interfaces";
+import { Eye, FileText } from "lucide-react";
 
 export function DialogForm({
   questions,
@@ -20,47 +21,44 @@ export function DialogForm({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">More</Button>
+        <Button variant="outline" size="sm" className="border-border text-muted-foreground hover:text-foreground hover:bg-card">
+          <Eye className="w-4 h-4 mr-2" />
+          View
+        </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] bg-card border-border rounded-2xl">
         <DialogHeader>
-          <DialogTitle>Submission</DialogTitle>
-          <DialogDescription>
-            Below is the Submission Details.
+          <DialogTitle className="font-display text-xl flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
+            Submission Details
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Complete response data from this submission
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-2 ">
-          <div>
-            {questions.map((questions, index) => {
-              return (
-                <div key={index} className="flex flex-col items-start gap-1 ">
-                  <Label
-                    htmlFor="name"
-                    className="text-right text-wrap text-lg first-letter:Capitalize  font-bold"
-                  >
-                    {questions.question_text}
-                  </Label>
-                  <p className="text-md">{questions.answer}</p>
-                </div>
-              );
-            })}
-          </div>
+        
+        <div className="flex flex-col gap-4 mt-4">
+          {questions?.map((q, index) => (
+            <div key={index} className="space-y-2 p-4 rounded-xl bg-background/50 border border-border">
+              <Label className="text-sm text-muted-foreground font-medium">
+                {q.question_text}
+              </Label>
+              <p className="text-foreground font-medium text-lg">
+                {q.answer || <span className="text-muted-foreground italic">No response</span>}
+              </p>
+            </div>
+          ))}
 
-          <div>
-              {choiceQuestions.map((questions, index) => {
-                return (
-                  <div key={index} className="flex flex-col items-start gap-1 ">
-                    <Label
-                      htmlFor="name"
-                      className="text-right text-wrap text-lg first-letter:Capitalize font-bold"
-                    >
-                      {questions.question_text}
-                    </Label>
-                    <p className="text-md">{questions.selectedChoice}</p>
-                  </div>
-                );
-              })}
-          </div>
+          {choiceQuestions?.map((cq, index) => (
+            <div key={index} className="space-y-2 p-4 rounded-xl bg-background/50 border border-border">
+              <Label className="text-sm text-muted-foreground font-medium">
+                {cq.question_text}
+              </Label>
+              <p className="text-foreground font-medium text-lg">
+                {cq.selectedChoice || <span className="text-muted-foreground italic">No response</span>}
+              </p>
+            </div>
+          ))}
         </div>
       </DialogContent>
     </Dialog>

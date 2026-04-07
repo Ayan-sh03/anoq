@@ -5,24 +5,31 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus, Type, ListChecks, Save, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useState } from "react";
-
-import { Form, MultipleChoiceQuestion, Question } from "@/dbschema/interfaces";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 
-export const Update = ({ data, slug }: { data: Form; slug: string }) => {
-  const [question, setQuestion] = useState<Question[]>(data.question || []);
-  const [choiceQuestion, setChoiceQuestion] = useState<
-    MultipleChoiceQuestion[]
-  >(data.choiceQuestion || []);
+interface LocalQuestion {
+  question_text: string;
+  answer?: string;
+}
+
+interface LocalChoiceQuestion {
+  question_text: string;
+  choices: string[];
+  selectedChoice?: string;
+}
+
+export const Update = ({ data, slug }: { data: any; slug: string }) => {
+  const [question, setQuestion] = useState<LocalQuestion[]>(data.question || []);
+  const [choiceQuestion, setChoiceQuestion] = useState<LocalChoiceQuestion[]>(data.choiceQuestion || []);
   const [title, setTitle] = useState(data.title || "");
   const [description, setDescription] = useState(data.description || "");
   const [pending, setPending] = useState(false);
   const toast = useToast();
-  const [animationParent] = useAutoAnimate()
-
+  const [animationParent] = useAutoAnimate();
 
   const { isAuthenticated, isLoading, user } = useKindeBrowserClient();
 
@@ -37,9 +44,8 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
   };
-  const handleDescriptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
+  
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDescription(e.target.value);
   };
 
@@ -47,7 +53,6 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
     e.preventDefault();
     setPending(true);
 
-    // Validators
     if (!title.trim()) {
       toast.toast({
         title: "Error",
@@ -78,7 +83,6 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
       return;
     }
 
-    // Check for empty questions
     const emptyQuestion = question.find((q) => !q.question_text.trim());
     if (emptyQuestion) {
       toast.toast({
@@ -90,12 +94,9 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
       return;
     }
 
-    // Check for empty choiceQuestions
     const emptyChoiceQuestion = choiceQuestion.find((cq) => {
-      if (!cq.question_text.trim()) {
-        return true;
-      }
-      const emptyChoice = cq.choices?.find((choice) => !choice.trim());
+      if (!cq.question_text.trim()) return true;
+      const emptyChoice = cq.choices?.find((choice: string) => !choice.trim());
       return emptyChoice !== undefined;
     });
 
@@ -127,85 +128,60 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        
+        const responseData = await res.json();
         toast.toast({
           title: "Success",
-          description: data.message,
+          description: responseData.message,
           variant: "success",
         });
-      } 
-      else if (res.status === 429) {
-      toast.toast({
-        title: "Error",
-           description: "Too many requests. Please try again later.",
-           variant: "warning",
-         });
-       }
-      else {
+      } else if (res.status === 429) {
         toast.toast({
           title: "Error",
-          description: "Failed to Update form",
+          description: "Too many requests. Please try again later.",
+          variant: "warning",
+        });
+      } else {
+        toast.toast({
+          title: "Error",
+          description: "Failed to update form",
           variant: "destructive",
         });
       }
-      setPending(false);
     } catch (error) {
       toast.toast({
         title: "Error",
-        description: "Failed to create form",
+        description: "Failed to update form",
         variant: "destructive",
       });
-      setPending(false);
     }
     setPending(false);
   };
 
-  const handleQuestionChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    index: number
-  ) => {
+  const handleQuestionChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const newQuestion = [...question];
     newQuestion[index].question_text = e.target.value;
     setQuestion(newQuestion);
   };
 
-  const handleChoiceQuestionTextChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    questionIndex: number
-  ) => {
+  const handleChoiceQuestionTextChange = (e: React.ChangeEvent<HTMLInputElement>, questionIndex: number) => {
     const newChoiceQuestion = [...choiceQuestion];
     newChoiceQuestion[questionIndex].question_text = e.target.value;
     setChoiceQuestion(newChoiceQuestion);
   };
 
-  const handleChoiceQuestionChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    questionIndex: number,
-    choiceIndex: number
-  ) => {
+  const handleChoiceQuestionChange = (e: React.ChangeEvent<HTMLInputElement>, questionIndex: number, choiceIndex: number) => {
     const newChoiceQuestion = [...choiceQuestion];
-    if (
-      newChoiceQuestion[questionIndex] &&
-      newChoiceQuestion[questionIndex].choices
-    ) {
-      //@ts-ignore
-      newChoiceQuestion[questionIndex].choices[choiceIndex] = e.target.value;
-    } else {
-      // Handle the case where the question or choices might be undefined
-      console.error("Invalid questionIndex or choiceIndex");
+    if (newChoiceQuestion[questionIndex] && newChoiceQuestion[questionIndex].choices) {
+      newChoiceQuestion[questionIndex].choices![choiceIndex] = e.target.value;
     }
-
     setChoiceQuestion(newChoiceQuestion);
   };
 
   const addQuestion = () => {
-    //@ts-ignore
     setQuestion([...question, { question_text: "" }]);
-    };
-    
-    const addChoiceQuestion = () => {
-    //@ts-ignore
+  };
+
+  const addChoiceQuestion = () => {
     setChoiceQuestion([...choiceQuestion, { question_text: "", choices: [] }]);
   };
 
@@ -223,9 +199,7 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
 
   const handleChoiceDelete = (questionIndex: number, choiceIndex: number) => {
     const newChoiceQuestions = [...choiceQuestion];
-    //@ts-ignore
-
-    newChoiceQuestions[questionIndex].choices.splice(choiceIndex, 1);
+    newChoiceQuestions[questionIndex].choices!.splice(choiceIndex, 1);
     setChoiceQuestion(newChoiceQuestions);
   };
 
@@ -236,134 +210,209 @@ export const Update = ({ data, slug }: { data: Form; slug: string }) => {
   };
 
   return (
-    <div className="h-screen container flex flex-col gap-20 py-10 items-center">
-      <h1 className="text-center text-4xl  text-zinc-600 font-bold ">
-        Update Your Form
-      </h1>
-
-      <form
-        className="flex flex-col gap-2 max-w-4xl justify-center items-center"
-        onSubmit={handleSubmit}
-      >
-        <label htmlFor="title">Title</label>
-        <Input
-          type="text"
-          id="title"
-          minLength={5}
-          value={title}
-          onChange={handleTitleChange}
-        />
-        <label htmlFor="description">Description</label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={handleDescriptionChange}
-        />
-
-        <div className="flex flex-row gap-2">
-          <div className="flex flex-col gap-2 p-2" ref={animationParent}>
-            <label htmlFor="questions">Questions</label>
-            {question.map((q, index) => (
-              <div key={index} className="flex items-center">
-                <Input
-                  type="text"
-                  minLength={3}
-                  name="question_text"
-                  placeholder={`Question ${index + 1}`}
-                  value={q.question_text}
-                  onChange={(e) => handleQuestionChange(e, index)}
-                />
-                <button
-                  type="button"
-                  className="ml-2 group"
-                  onClick={() => handleQuestionDelete(index)}
-                >
-                  <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
-                </button>
-              </div>
-            ))}
-            <Button disabled={pending} type="button" onClick={addQuestion}>
-              Add
-            </Button>
-          </div>
-          <div className="flex flex-col gap-2 p-2" ref={animationParent}>
-            <label htmlFor="">Multiple Choice Questions</label>
-            {choiceQuestion.map((q, questionIndex) => (
-              <div
-                key={questionIndex}
-                className={`${
-                  questionIndex > 0 ? " border-t pt-2 border-zinc-500 " : ""
-                }`}
-              >
-                <div className="flex items-center">
-                  <Input
-                    type="text"
-                    minLength={3}
-                    placeholder={`Question ${questionIndex + 1}`}
-                    value={q.question_text}
-                    onChange={(e) =>
-                      handleChoiceQuestionTextChange(e, questionIndex)
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="ml-2 group"
-                    onClick={() => handleChoiceQuestionDelete(questionIndex)}
-                  >
-                    <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
-                  </button>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-4" ref={animationParent}>
-                  {q.choices?.map((choice, choiceIndex) => (
-                    <div key={choiceIndex} className="flex items-center">
-                      <Input
-                        type="text"
-                        minLength={1}
-                        placeholder={`Choice ${choiceIndex + 1}`}
-                        value={choice}
-                        onChange={(e) =>
-                          handleChoiceQuestionChange(
-                            e,
-                            questionIndex,
-                            choiceIndex
-                          )
-                        }
-                      />
-                      <button
-                        type="button"
-                        className="ml-2 group"
-                        onClick={() =>
-                          handleChoiceDelete(questionIndex, choiceIndex)
-                        }
-                      >
-                        <Trash2 className="opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <Button
-                  className="mt-1"
-                  disabled={pending}
-                  type="button"
-                  onClick={() => addChoice(questionIndex)}
-                >
-                  Add Choice
-                </Button>
-              </div>
-            ))}
-            <Button
-              disabled={pending}
-              type="button"
-              onClick={addChoiceQuestion}
-            >
-              Add
-            </Button>
+    <div className="container mx-auto px-6 py-8 relative z-10">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center gap-4 mb-10">
+          <Link 
+            href="/dashboard" 
+            className="p-3 rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-card transition-all"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
+              Update Your Form
+            </h1>
+            <p className="text-muted-foreground mt-1">Edit your feedback form details</p>
           </div>
         </div>
-        <Button disabled={pending} type="submit">
-          Submit
-        </Button>
-      </form>
+
+        <form onSubmit={handleSubmit} className="space-y-10">
+          <div className="space-y-6 p-8 rounded-2xl bg-card/50 border border-border">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-foreground mb-3">
+                Form Title
+              </label>
+              <Input
+                type="text"
+                id="title"
+                minLength={5}
+                value={title}
+                onChange={handleTitleChange}
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 transition-all text-lg py-6"
+                placeholder="Enter form title"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-foreground mb-3">
+                Description
+              </label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={handleDescriptionChange}
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 transition-all min-h-[120px] text-lg"
+                placeholder="What is this form about?"
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="p-8 rounded-2xl bg-card/50 border border-border">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Type className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-display text-lg font-semibold text-foreground">Text Questions</h3>
+                  <p className="text-sm text-muted-foreground">Open-ended responses</p>
+                </div>
+              </div>
+
+              <div className="space-y-4" ref={animationParent}>
+                {question.map((q, index) => (
+                  <div key={index} className="flex items-start gap-3 group/question">
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        minLength={3}
+                        placeholder={`Question ${index + 1}`}
+                        value={q.question_text}
+                        onChange={(e) => handleQuestionChange(e, index)}
+                        className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 transition-all"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleQuestionDelete(index)}
+                      className="p-2.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all opacity-0 group-hover/question:opacity-100"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+
+                {question.length === 0 && (
+                  <p className="text-sm text-muted-foreground italic py-4 text-center">
+                    No text questions yet
+                  </p>
+                )}
+              </div>
+
+              <Button
+                type="button"
+                onClick={addQuestion}
+                variant="outline"
+                className="w-full mt-4 border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Question
+              </Button>
+            </div>
+
+            <div className="p-8 rounded-2xl bg-card/50 border border-border">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <ListChecks className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-display text-lg font-semibold text-foreground">Multiple Choice</h3>
+                  <p className="text-sm text-muted-foreground">Select from options</p>
+                </div>
+              </div>
+
+              <div className="space-y-6" ref={animationParent}>
+                {choiceQuestion.map((q, questionIndex) => (
+                  <div key={questionIndex} className="space-y-3 p-4 rounded-xl bg-background/50 border border-border/50">
+                    <div className="flex items-start gap-3 group/choice">
+                      <div className="flex-1">
+                        <Input
+                          type="text"
+                          minLength={3}
+                          placeholder={`Question ${questionIndex + 1}`}
+                          value={q.question_text}
+                          onChange={(e) => handleChoiceQuestionTextChange(e, questionIndex)}
+                          className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 transition-all"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleChoiceQuestionDelete(questionIndex)}
+                        className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all opacity-0 group-hover/choice:opacity-100"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-2 pl-4" ref={animationParent}>
+                      {q.choices?.map((choice: string, choiceIndex: number) => (
+                        <div key={choiceIndex} className="flex items-center gap-3 group/option">
+                          <div className="flex-1">
+                            <Input
+                              type="text"
+                              minLength={1}
+                              placeholder={`Option ${choiceIndex + 1}`}
+                              value={choice}
+                              onChange={(e) => handleChoiceQuestionChange(e, questionIndex, choiceIndex)}
+                              className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 transition-all"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleChoiceDelete(questionIndex, choiceIndex)}
+                            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all opacity-0 group-hover/option:opacity-100"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button
+                      type="button"
+                      onClick={() => addChoice(questionIndex)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary hover:text-primary/80 hover:bg-primary/10 ml-4"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Option
+                    </Button>
+                  </div>
+                ))}
+
+                {choiceQuestion.length === 0 && (
+                  <p className="text-sm text-muted-foreground italic py-4 text-center">
+                    No multiple choice questions yet
+                  </p>
+                )}
+              </div>
+
+              <Button
+                type="button"
+                onClick={addChoiceQuestion}
+                variant="outline"
+                className="w-full mt-4 border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Question
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex justify-center pt-4">
+            <Button
+              type="submit"
+              disabled={pending}
+              className="px-10 py-6 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-200 group"
+            >
+              <Save className="mr-2 w-5 h-5" />
+              {pending ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

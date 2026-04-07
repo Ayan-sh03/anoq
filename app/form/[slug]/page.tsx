@@ -7,8 +7,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { SVGProps } from "react";
 import { CardComponent } from "@/components/CardComponent";
+import { Search, List, FileText } from "lucide-react";
+import Link from "next/link";
+
 export default async function Submission({
   params,
 }: {
@@ -20,138 +22,88 @@ export default async function Submission({
   const { data } = await res.json();
 
   return (
-    <main className="container h-screen  mx-auto px-4 py-8 md:px-6 lg:px-8">
-      <div className="flex flex-col items-center justify-between mb-8 md:flex-row">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Form Submissions</h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            View and manage All submissions.
-          </p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
-            <Input
-              className="pl-10 pr-4 py-2 rounded-md border border-gray-200 dark:border-gray-800 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary"
-              placeholder="Search submissions..."
-              type="text"
-            />
+    <div className="min-h-screen relative">
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-slate-700/40 to-slate-800/20 blur-[120px]" />
+        <div className="absolute bottom-1/3 -right-20 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-teal-900/30 to-slate-900/20 blur-[120px]" />
+      </div>
+
+      <div className="container mx-auto px-6 py-8 relative z-10">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-10">
+          <div>
+            <Link href="/" className="font-display text-2xl font-bold tracking-tight mb-2 inline-block text-foreground">
+              Submissions
+            </Link>
+            <h1 className="text-3xl font-bold text-foreground">Form Responses</h1>
+            <p className="text-muted-foreground mt-1">
+              View and manage all submissions
+            </p>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="icon" variant="outline">
-                <ListOrderedIcon className="w-5 h-5" />
-                <span className="sr-only">Sort</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={8}>
-              <DropdownMenuRadioGroup value="date">
-                <DropdownMenuRadioItem value="date">Date</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="rating">
-                  Rating
-                </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                className="pl-12 pr-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Search submissions..."
+                type="text"
+              />
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="border-border">
+                  <List className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-card border-border">
+                <DropdownMenuRadioGroup value="date">
+                  <DropdownMenuRadioItem value="date" className="focus:bg-primary/10">
+                    Newest First
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="oldest" className="focus:bg-primary/10">
+                    Oldest First
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
-      
-      
-      {data && data.length > 0 ? (<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {data?.map(async (item: any, index: number) => (
-          <CardComponent email={item.email} name={item.name} key={index}  questions={item.question} choiceQuesions={item.choiceQuestion} />
-        ))}
-      </div>
-):(
-  <>
-    <h2 className="text-xl">No Submissions!</h2>
-  </>
-)}
 
-    </main>
+        {data && data.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {data?.map((item: any, index: number) => (
+              <div 
+                key={index} 
+                className="opacity-0 animate-slide-up" 
+                style={{ animationDelay: `${index * 50}ms`, animationFillMode: "forwards" }}
+              >
+                <CardComponent 
+                  email={item.email} 
+                  name={item.name} 
+                  key={index}  
+                  questions={item.question} 
+                  choiceQuesions={item.choiceQuestion} 
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-16 rounded-2xl bg-card/50 border border-border text-center">
+            <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+              <FileText className="w-10 h-10 text-primary" />
+            </div>
+            <h2 className="font-display text-2xl font-bold text-foreground mb-3">
+              No Submissions Yet
+            </h2>
+            <p className="text-muted-foreground max-w-md">
+              Share your form to start collecting anonymous feedback from your users
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="absolute top-32 right-20 w-20 h-20 rounded-full bg-gradient-to-br from-slate-600/30 to-slate-700/20 blur-xl animate-float" />
+      <div className="absolute bottom-48 left-20 w-24 h-24 rounded-full bg-gradient-to-br from-teal-700/20 to-slate-800/20 blur-xl animate-float-delay" />
+    </div>
   );
-
-  function ListOrderedIcon(props: HTMLOrSVGElement | SVGProps<SVGSVGElement>) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <line x1="10" x2="21" y1="6" y2="6" />
-        <line x1="10" x2="21" y1="12" y2="12" />
-        <line x1="10" x2="21" y1="18" y2="18" />
-        <path d="M4 6h1v4" />
-        <path d="M4 10h2" />
-        <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
-      </svg>
-    );
-  }
-
-  function MoveHorizontalIcon(props: HTMLOrSVGElement) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <polyline points="18 8 22 12 18 16" />
-        <polyline points="6 8 2 12 6 16" />
-        <line x1="2" x2="22" y1="12" y2="12" />
-      </svg>
-    );
-  }
-
-  function SearchIcon(props: HTMLOrSVGElement | SVGProps<SVGSVGElement>) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-    );
-  }
-
-  function StarIcon(props: HTMLOrSVGElement) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-      </svg>
-    );
-  }
 }

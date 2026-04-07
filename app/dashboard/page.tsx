@@ -2,7 +2,7 @@ import FormCard from "@/components/FormCard";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/dbschema/interfaces";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { Plus, ArrowRight, Search, MessageSquare } from "lucide-react";
+import { Plus, Search, MessageSquare, ArrowRight, LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -23,7 +23,7 @@ export default async function Page() {
   });
 
   if (!forms.ok) {
-    notFound()
+    notFound();
   }
 
   const { data } = await forms.json();
@@ -33,75 +33,85 @@ export default async function Page() {
 
 function Dashboard({ data }: { data: Form[] }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-900 to-indigo-900 overflow-hidden relative">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-600 blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-indigo-600 blur-[120px] animate-pulse delay-300"></div>
+    <div className="min-h-screen relative">
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-slate-700/40 to-slate-800/20 blur-[120px]" />
+        <div className="absolute bottom-1/3 -right-20 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-teal-900/30 to-slate-900/20 blur-[120px]" />
       </div>
 
-      {/* Navigation */}
       <nav className="container mx-auto px-6 py-6 flex items-center z-10 relative">
-        <Link href="/" className="font-bold text-3xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300 hover:from-pink-300 hover:to-purple-400 transition-all">
+        <Link href="/" className="font-display text-3xl font-bold tracking-tight text-foreground">
           Anoq
         </Link>
 
-        <div className="ml-auto flex items-center space-x-3">
+        <div className="ml-auto flex items-center gap-3">
           <Link href="/create">
-            <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-purple-500/30 transition-all transform hover:scale-105 flex items-center gap-2">
-              <Plus className="w-4 h-4" /> New Form
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-200 group">
+              <Plus className="w-4 h-4" />
+              New Form
             </Button>
           </Link>
         </div>
       </nav>
 
-      {/* Main Content */}
       <main className="container mx-auto px-6 py-8 relative z-10">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">Your Feedback Forms</h1>
-            <p className="text-gray-300">Manage all your anonymous feedback collection forms</p>
+          <div className="mb-10">
+            <h1 className="font-display text-4xl font-bold text-foreground mb-3">
+              Your Feedback Forms
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Manage all your anonymous feedback collection forms
+            </p>
           </div>
 
-          {/* Search and Filter (Placeholder) */}
-          <div className="mb-8 flex items-center gap-4">
+          <div className="mb-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search forms..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-12 pr-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
               />
             </div>
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 backdrop-blur-sm">
-              Filter
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" className="border-border text-muted-foreground hover:text-foreground hover:bg-card">
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" className="border-border text-muted-foreground hover:text-foreground hover:bg-card">
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
-          {/* Forms Grid */}
           {data.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {data.map((form, index) => (
-                <FormCard
-                  key={index}
-                  title={form.title}
-                  description={form.description}
-                  slug={form.slug}
-                  status={form.status}
-                />
+                <div key={index} className="opacity-0 animate-slide-up" style={{ animationDelay: `${index * 100}ms`, animationFillMode: "forwards" }}>
+                  <FormCard
+                    title={form.title}
+                    description={form.description}
+                    slug={form.slug}
+                    status={form.status}
+                  />
+                </div>
               ))}
             </div>
           ) : (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center">
-              <div className="mx-auto w-16 h-16 flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mb-4">
-                <MessageSquare className="w-6 h-6 text-white" />
+            <div className="flex flex-col items-center justify-center p-12 rounded-2xl bg-card/50 border border-border text-center">
+              <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                <MessageSquare className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">No forms yet</h3>
-              <p className="text-gray-300 mb-4">Create your first form to start collecting anonymous feedback</p>
+              <h3 className="font-display text-2xl font-bold text-foreground mb-3">
+                No forms yet
+              </h3>
+              <p className="text-muted-foreground mb-8 max-w-md">
+                Create your first form to start collecting anonymous feedback from your users
+              </p>
               <Link href="/create">
-                <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
-                  Create Form <ArrowRight className="ml-2 w-4 h-4" />
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm group">
+                  Create Form
+                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </div>
@@ -109,9 +119,8 @@ function Dashboard({ data }: { data: Form[] }) {
         </div>
       </main>
 
-      {/* Floating Animated Shapes */}
-      <div className="absolute top-20 right-20 w-16 h-16 rounded-full bg-purple-500/30 blur-xl animate-float"></div>
-      <div className="absolute bottom-40 left-20 w-24 h-24 rounded-full bg-pink-500/30 blur-xl animate-float-delay"></div>
+      <div className="absolute top-32 right-20 w-20 h-20 rounded-full bg-gradient-to-br from-slate-600/30 to-slate-700/20 blur-xl animate-float" />
+      <div className="absolute bottom-48 left-20 w-24 h-24 rounded-full bg-gradient-to-br from-teal-700/20 to-slate-800/20 blur-xl animate-float-delay" />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { Trash2, Plus, ArrowRight, ChevronRight } from "lucide-react";
+import { Trash2, Plus, ArrowRight, ChevronRight, Type, ListChecks } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useState } from "react";
@@ -41,14 +41,11 @@ const Create = () => {
     e.preventDefault();
     setPending(true);
 
-    // Validation logic remains the same
     if (!title.trim()) {
       toast({ title: "Error", description: "Please enter a title", variant: "destructive" });
       setPending(false);
       return;
     }
-
-    // ... rest of your validation logic
 
     try {
       const res = await fetch("/api/form", {
@@ -69,10 +66,10 @@ const Create = () => {
           title: "Success",
           description: (
             <div className="flex items-center">
-              <span>{data.message}</span>
+              <span>Form created successfully!</span>
               <Link
                 href={`/${data.slug}`}
-                className="ml-2 text-purple-300 hover:text-purple-200 flex items-center"
+                className="ml-2 text-primary hover:text-primary/80 flex items-center"
               >
                 View form <ChevronRight className="w-4 h-4" />
               </Link>
@@ -94,42 +91,23 @@ const Create = () => {
     }
   };
 
-  const handleQuestionChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    index: number
-  ) => {
+  const handleQuestionChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const newQuestion = [...question];
     newQuestion[index].question_text = e.target.value;
     setQuestion(newQuestion);
   };
 
-  const handleChoiceQuestionTextChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    questionIndex: number
-  ) => {
+  const handleChoiceQuestionTextChange = (e: React.ChangeEvent<HTMLInputElement>, questionIndex: number) => {
     const newChoiceQuestion = [...choiceQuestion];
     newChoiceQuestion[questionIndex].question_text = e.target.value;
     setChoiceQuestion(newChoiceQuestion);
   };
 
-  const handleChoiceQuestionChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    questionIndex: number,
-    choiceIndex: number
-  ) => {
+  const handleChoiceQuestionChange = (e: React.ChangeEvent<HTMLInputElement>, questionIndex: number, choiceIndex: number) => {
     const newChoiceQuestion = [...choiceQuestion];
-    if (
-      newChoiceQuestion[questionIndex] &&
-      newChoiceQuestion[questionIndex].choices
-    ) {
-
-      //@ts-ignore
-      newChoiceQuestion[questionIndex].choices[choiceIndex] = e.target.value;
-    } else {
-      // Handle the case where the question or choices might be undefined
-      console.error("Invalid questionIndex or choiceIndex");
+    if (newChoiceQuestion[questionIndex] && newChoiceQuestion[questionIndex].choices) {
+      newChoiceQuestion[questionIndex].choices![choiceIndex] = e.target.value;
     }
-
     setChoiceQuestion(newChoiceQuestion);
   };
 
@@ -155,9 +133,7 @@ const Create = () => {
 
   const handleChoiceDelete = (questionIndex: number, choiceIndex: number) => {
     const newChoiceQuestions = [...choiceQuestion];
-    //@ts-ignore
-
-    newChoiceQuestions[questionIndex].choices.splice(choiceIndex, 1);
+    newChoiceQuestions[questionIndex].choices!.splice(choiceIndex, 1);
     setChoiceQuestion(newChoiceQuestions);
   };
 
@@ -167,39 +143,35 @@ const Create = () => {
     setQuestion(newQuestions);
   };
 
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-900 to-indigo-900 overflow-hidden relative">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-600 blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-indigo-600 blur-[120px] animate-pulse delay-300"></div>
+    <div className="min-h-screen relative">
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-slate-700/40 to-slate-800/20 blur-[120px]" />
+        <div className="absolute bottom-1/3 -right-20 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-teal-900/30 to-slate-900/20 blur-[120px]" />
       </div>
 
-      {/* Navigation */}
       <nav className="container mx-auto px-6 py-6 flex items-center z-10 relative">
-        <Link href="/" className="font-bold text-3xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300 hover:from-pink-300 hover:to-purple-400 transition-all">
+        <Link href="/" className="font-display text-3xl font-bold tracking-tight text-foreground">
           Anoq
         </Link>
       </nav>
 
-      {/* Main Content */}
       <main className="container mx-auto px-6 py-8 relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-white mb-4">
-              Create Your <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-300">Feedback Form</span>
+            <h1 className="font-display text-4xl sm:text-5xl font-bold text-foreground mb-4">
+              Create Your{' '}
+              <span className="text-primary">Feedback Form</span>
             </h1>
-            <p className="text-gray-300 max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Design a form to collect completely anonymous feedback from your users
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Form Title & Description */}
-            <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-10">
+            <div className="space-y-6 p-8 rounded-2xl bg-card/50 border border-border">
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="title" className="block text-sm font-medium text-foreground mb-3">
                   Form Title
                 </label>
                 <Input
@@ -208,45 +180,40 @@ const Create = () => {
                   minLength={5}
                   value={title}
                   onChange={handleTitleChange}
-                  className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Enter form title"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all text-lg py-6"
+                  placeholder="Enter a descriptive title for your form"
                 />
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="description" className="block text-sm font-medium text-foreground mb-3">
                   Description
                 </label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={handleDescriptionChange}
-                  className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[120px]"
-                  placeholder="What is this form about?"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all min-h-[120px] text-lg"
+                  placeholder="What is this form about? Set expectations for respondents"
                 />
               </div>
             </div>
 
-            {/* Questions Sections */}
             <div className="grid md:grid-cols-2 gap-8">
-              {/* Text Questions */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-white">Text Questions</h3>
-                  <Button
-                    type="button"
-                    onClick={addQuestion}
-                    size="sm"
-                    variant="ghost"
-                    className="text-purple-400 hover:text-purple-300 hover:bg-white/5"
-                  >
-                    <Plus className="w-4 h-4 mr-1" /> Add
-                  </Button>
+              <div className="p-8 rounded-2xl bg-card/50 border border-border">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Type className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-foreground">Text Questions</h3>
+                    <p className="text-sm text-muted-foreground">Open-ended responses</p>
+                  </div>
                 </div>
 
                 <div className="space-y-4" ref={animationParent}>
                   {question.map((q, index) => (
-                    <div key={index} className="flex items-start gap-3">
+                    <div key={index} className="flex items-start gap-3 group/question">
                       <div className="flex-1">
                         <Input
                           type="text"
@@ -254,13 +221,13 @@ const Create = () => {
                           placeholder={`Question ${index + 1}`}
                           value={q.question_text}
                           onChange={(e) => handleQuestionChange(e, index)}
-                          className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 transition-all"
                         />
                       </div>
                       <button
                         type="button"
                         onClick={() => handleQuestionDelete(index)}
-                        className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                        className="p-2.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all opacity-0 group-hover/question:opacity-100"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -268,30 +235,38 @@ const Create = () => {
                   ))}
 
                   {question.length === 0 && (
-                    <p className="text-sm text-gray-400 italic">No text questions added yet</p>
+                    <p className="text-sm text-muted-foreground italic py-4 text-center">
+                      No text questions added yet
+                    </p>
                   )}
                 </div>
+
+                <Button
+                  type="button"
+                  onClick={addQuestion}
+                  variant="outline"
+                  className="w-full mt-4 border-primary/30 text-primary hover:bg-primary/10"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Question
+                </Button>
               </div>
 
-              {/* Multiple Choice Questions */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-white">Multiple Choice</h3>
-                  <Button
-                    type="button"
-                    onClick={addChoiceQuestion}
-                    size="sm"
-                    variant="ghost"
-                    className="text-purple-400 hover:text-purple-300 hover:bg-white/5"
-                  >
-                    <Plus className="w-4 h-4 mr-1" /> Add
-                  </Button>
+              <div className="p-8 rounded-2xl bg-card/50 border border-border">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <ListChecks className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-foreground">Multiple Choice</h3>
+                    <p className="text-sm text-muted-foreground">Select from options</p>
+                  </div>
                 </div>
 
                 <div className="space-y-6" ref={animationParent}>
                   {choiceQuestion.map((q, questionIndex) => (
-                    <div key={questionIndex} className="space-y-3">
-                      <div className="flex items-start gap-3">
+                    <div key={questionIndex} className="space-y-3 p-4 rounded-xl bg-background/50 border border-border/50">
+                      <div className="flex items-start gap-3 group/choice">
                         <div className="flex-1">
                           <Input
                             type="text"
@@ -299,13 +274,13 @@ const Create = () => {
                             placeholder={`Question ${questionIndex + 1}`}
                             value={q.question_text}
                             onChange={(e) => handleChoiceQuestionTextChange(e, questionIndex)}
-                            className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 transition-all"
                           />
                         </div>
                         <button
                           type="button"
                           onClick={() => handleChoiceQuestionDelete(questionIndex)}
-                          className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                          className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all opacity-0 group-hover/choice:opacity-100"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -313,7 +288,7 @@ const Create = () => {
 
                       <div className="space-y-2 pl-4" ref={animationParent}>
                         {q.choices?.map((choice, choiceIndex) => (
-                          <div key={choiceIndex} className="flex items-center gap-3">
+                          <div key={choiceIndex} className="flex items-center gap-3 group/option">
                             <div className="flex-1">
                               <Input
                                 type="text"
@@ -321,13 +296,13 @@ const Create = () => {
                                 placeholder={`Option ${choiceIndex + 1}`}
                                 value={choice}
                                 onChange={(e) => handleChoiceQuestionChange(e, questionIndex, choiceIndex)}
-                                className="bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="bg-background border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 transition-all"
                               />
                             </div>
                             <button
                               type="button"
                               onClick={() => handleChoiceDelete(questionIndex, choiceIndex)}
-                              className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                              className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all opacity-0 group-hover/option:opacity-100"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -338,43 +313,53 @@ const Create = () => {
                       <Button
                         type="button"
                         onClick={() => addChoice(questionIndex)}
-                        size="sm"
                         variant="ghost"
-                        className="text-purple-400 hover:text-purple-300 hover:bg-white/5 ml-4"
+                        size="sm"
+                        className="text-primary hover:text-primary/80 hover:bg-primary/10 ml-4"
                       >
-                        <Plus className="w-4 h-4 mr-1" /> Add Option
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add Option
                       </Button>
                     </div>
                   ))}
 
                   {choiceQuestion.length === 0 && (
-                    <p className="text-sm text-gray-400 italic">No multiple choice questions added yet</p>
+                    <p className="text-sm text-muted-foreground italic py-4 text-center">
+                      No multiple choice questions added yet
+                    </p>
                   )}
                 </div>
+
+                <Button
+                  type="button"
+                  onClick={addChoiceQuestion}
+                  variant="outline"
+                  className="w-full mt-4 border-primary/30 text-primary hover:bg-primary/10"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Question
+                </Button>
               </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="flex justify-center pt-8">
+            <div className="flex justify-center pt-4">
               <Button
                 type="submit"
                 disabled={pending}
-                className="px-8 py-6 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-xl hover:shadow-purple-600/40 transition-all transform hover:scale-105 group"
+                className="px-10 py-6 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-200 group"
               >
                 {pending ? "Creating..." : "Create Feedback Form"}
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                {!pending && <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />}
               </Button>
             </div>
           </form>
         </div>
       </main>
 
-      {/* Floating Animated Shapes */}
-      <div className="absolute top-20 right-20 w-16 h-16 rounded-full bg-purple-500/30 blur-xl animate-float"></div>
-      <div className="absolute bottom-40 left-20 w-24 h-24 rounded-full bg-pink-500/30 blur-xl animate-float-delay"></div>
+      <div className="absolute top-32 right-20 w-20 h-20 rounded-full bg-gradient-to-br from-slate-600/30 to-slate-700/20 blur-xl animate-float" />
+      <div className="absolute bottom-48 left-20 w-24 h-24 rounded-full bg-gradient-to-br from-teal-700/20 to-slate-800/20 blur-xl animate-float-delay" />
     </div>
   );
-
 };
 
 export default Create;

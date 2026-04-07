@@ -1,7 +1,6 @@
 import AlreadySubmitted from "@/components/AlreadySubmitted";
 import Closed from "@/components/Closed";
 import FormComponent from "@/components/FormComponent";
-import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -28,7 +27,7 @@ async function Page({ params }: { params: { slug: string } }) {
   const data = await getData(params.slug);
 
   if (data[0].status === "closed") {
-    return <Closed />
+    return <Closed />;
   }
 
   if (data.length === 0) {
@@ -43,16 +42,24 @@ async function Page({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-900 to-indigo-900 overflow-hidden relative ">
-      {/* <Navbar/> */}
-      <nav className="container mx-auto px-6 py-6 bg-transparent flex items-center z-10 relative">
-        <Link href="/" className="font-bold text-3xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300 hover:from-pink-300 hover:to-purple-400 transition-all">
+    <div className="min-h-screen relative">
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-slate-700/40 to-slate-800/20 blur-[120px]" />
+        <div className="absolute bottom-1/3 -right-20 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-teal-900/30 to-slate-900/20 blur-[120px]" />
+      </div>
+
+      <nav className="container mx-auto px-6 py-6 flex items-center z-10 relative">
+        <Link href="/" className="font-display text-3xl font-bold tracking-tight text-foreground">
           Anoq
         </Link>
       </nav>
 
       <FormComponent data={data} slug={params.slug} />
+
+      <div className="absolute top-32 right-20 w-20 h-20 rounded-full bg-gradient-to-br from-slate-600/30 to-slate-700/20 blur-xl animate-float" />
+      <div className="absolute bottom-48 left-20 w-24 h-24 rounded-full bg-gradient-to-br from-teal-700/20 to-slate-800/20 blur-xl animate-float-delay" />
     </div>
   );
 }
+
 export default Page;

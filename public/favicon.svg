@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="15" fill="url(#gradient)" opacity="0.9"/>
+
+  <!-- Document/form shape -->
+  <rect x="8" y="6" width="16" height="20" rx="2" fill="white" opacity="0.9"/>
+
+  <!-- Form lines -->
+  <line x1="12" y1="12" x2="20" y2="12" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="12" y1="16" x2="20" y2="16" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="12" y1="20" x2="16" y2="20" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Speech bubble/feedback indicator -->
+  <path d="M22 8 C22 6 20 6 20 8 L20 10 L24 10 L24 8 Z" fill="#a855f7" opacity="0.8"/>
+  <circle cx="23" cy="7" r="1" fill="white"/>
+
+  <!-- Anonymous user silhouette -->
+  <circle cx="13" cy="24" r="2" fill="#6366f1" opacity="0.7"/>
+  <path d="M11 27 C11 27 11 26 11 25 C11 24 12 23 13 23 C14 23 15 24 15 25 C15 26 15 27 15 27" fill="#6366f1" opacity="0.7"/>
+</svg>

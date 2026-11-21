@@ -59,9 +59,9 @@ const config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-outfit)", "system-ui", "sans-serif"],
-        display: ["var(--font-space-grotesk)", "system-ui", "sans-serif"],
-        mono: ["var(--font-jetbrains-mono)", "monospace"],
+        sans: ["var(--font-text)"],
+        display: ["var(--font-title)"],
+        mono: ["var(--font-label)"],
       },
       spacing: {
         "18": "4.5rem",

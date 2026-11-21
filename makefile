@@ -1,12 +1,17 @@
+.PHONY: db-up db-migrate api dev test
 
-migrate-apply:
-	edgedb migration create && edgedb migration apply
+db-up:
+	docker compose up -d postgres
 
-migrate-create:
-	edgedb migration create
+db-migrate:
+	npm run db:migrate
 
-migrate-rollback:
-	edgedb migration rollback
+api:
+	node --env-file=.env.local --run api
 
-ui:
-	edgedb ui
+dev:
+	npm run dev
+
+test:
+	go test ./...
+	npm run lint

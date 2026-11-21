@@ -1,0 +1,41 @@
+/* Anoq stationery palette. Tailwind utilities consume the same semantic channels. */
+:root {
+  --background: 42 43% 96%;
+  --foreground: 30 12% 13%;
+  --card: 46 60% 99%;
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary: 10 74% 43%;
+  --primary-foreground: 45 100% 98%;
+  --secondary: 42 27% 90%;
+  --secondary-foreground: var(--foreground);
+  --muted: var(--secondary);
+  --muted-foreground: 33 7% 35%;
+  --accent: 36 34% 89%;
+  --accent-foreground: var(--foreground);
+  --destructive: 356 66% 38%;
+  --destructive-foreground: var(--primary-foreground);
+  --border: 38 18% 79%;
+  --input: 36 12% 56%;
+  --ring: 199 70% 32%;
+  --radius: .45rem;
+  --ink: hsl(var(--foreground));
+  --paper: hsl(var(--background));
+  --sheet: hsl(var(--card));
+  --red: hsl(var(--primary));
+  --pressed-red: #902d1d;
+  --key-edge: #862d1d;
+  --rule: hsl(var(--border));
+  --dim: hsl(var(--muted-foreground));
+  --sage: #355839;
+  --light-sage: #e7ecdf;
+  --amber: #77521c;
+  --light-amber: #f6ead0;
+  --tape: #ddc993;
+  --tape-stripe: #e6d6ac;
+  --shadow-ink: 45 28 11;
+  --font-text: var(--font-dm), Arial, sans-serif;
+  --font-title: var(--font-gloock), Georgia, serif;
+  --font-label: "Courier New", monospace;
+}

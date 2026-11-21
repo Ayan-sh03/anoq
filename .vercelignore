@@ -1,0 +1,10 @@
+.env*
+!.env.example
+.agents
+.next
+.vercel
+build
+cookies.txt
+go-backend
+node_modules
+*.tsbuildinfo

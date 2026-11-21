@@ -122,7 +122,8 @@ func requestGeneration(ctx context.Context, client *http.Client, key, model stri
 
 func (a *app) createAI(w http.ResponseWriter, r *http.Request, u user) error {
 	var in struct {
-		Prompt string `json:"prompt"`
+		Prompt      string `json:"prompt"`
+		PreviewOnly bool   `json:"preview_only"`
 	}
 	if err := body(w, r, &in); err != nil {
 		return err
@@ -155,6 +156,9 @@ func (a *app) createAI(w http.ResponseWriter, r *http.Request, u user) error {
 			w.Header().Set("Retry-After", "5")
 		}
 		return err
+	}
+	if in.PreviewOnly {
+		return respond(w, http.StatusOK, f)
 	}
 	return a.saveNew(w, r, u, f)
 }

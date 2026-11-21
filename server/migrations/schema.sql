@@ -116,6 +116,8 @@ CREATE TABLE IF NOT EXISTS filled_form_answers (
     PRIMARY KEY (filled_form_id, question_id)
 );
 ALTER TABLE filled_form_answers ADD COLUMN IF NOT EXISTS question_text TEXT;
+-- A NULL position preserves the historical ID ordering for pre-snapshot replies.
+ALTER TABLE filled_form_answers ADD COLUMN IF NOT EXISTS position INTEGER;
 
 CREATE TABLE IF NOT EXISTS filled_form_choice_answers (
     filled_form_id INTEGER REFERENCES filled_forms(id) ON DELETE CASCADE,
@@ -125,6 +127,7 @@ CREATE TABLE IF NOT EXISTS filled_form_choice_answers (
     PRIMARY KEY (filled_form_id, choice_question_id)
 );
 ALTER TABLE filled_form_choice_answers ADD COLUMN IF NOT EXISTS question_text TEXT;
+ALTER TABLE filled_form_choice_answers ADD COLUMN IF NOT EXISTS position INTEGER;
 
 -- Capture prompt text for responses submitted before snapshots were introduced.
 UPDATE filled_form_answers a SET question_text = q.question_text
@@ -135,7 +138,8 @@ FROM multiple_choice_questions q WHERE a.choice_question_id = q.id AND a.questio
 CREATE OR REPLACE FUNCTION update_updated_at_column() RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
 BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
+    -- Each committed edit needs a distinct version, including writers that waited for a lock.
+    NEW.updated_at = GREATEST(clock_timestamp(), OLD.updated_at + INTERVAL '1 microsecond');
     RETURN NEW;
 END;
 $$;

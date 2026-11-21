@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { clientKey } from "@/lib/client-key";
 import { ArrowRight, ListChecks, Plus, Sparkles, Trash2, Type } from "lucide-react";
 import Navbar from "./Navbar";
 import { Button } from "./ui/button";
@@ -9,8 +10,8 @@ import { Textarea } from "./ui/textarea";
 import { useToast } from "./ui/use-toast";
 
 interface Field { id?: number; question_text: string; choices?: string[] }
-interface Draft { title: string; description: string; questions?: Field[]; choice_questions?: Field[] }
-interface Props { data?: Draft; slug?: string }
+export interface Draft { title: string; description: string; updated_at?: string; questions?: Field[]; choice_questions?: Field[] }
+interface Props { data?: Draft; slug?: string; draftKey?: string; onPublishDraft?: (slug: string) => void; onDiscardDraft?: () => void }
 
 function makeRow(field: Field, choice: boolean, key: string) {
   return {
@@ -21,20 +22,64 @@ function makeRow(field: Field, choice: boolean, key: string) {
 
 function rowsFrom(form?: Draft) {
   return [
-    ...(form?.questions ?? []).map(field => makeRow(field, false, `written-${field.id}`)),
-    ...(form?.choice_questions ?? []).map(field => makeRow(field, true, `choice-${field.id}`)),
+    ...(form?.questions ?? []).map((field, index) => makeRow(field, false, `written-${field.id ?? `new-${index}`}`)),
+    ...(form?.choice_questions ?? []).map((field, index) => makeRow(field, true, `choice-${field.id ?? `new-${index}`}`)),
   ];
 }
 
-export function Update({ data, slug }: Props) {
+const subscribeToHydration = () => () => {};
+
+export function useSavedDraft(key: string) {
+  const hydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
+  const draft = useMemo(() => {
+    if (!hydrated) return;
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return;
+      const saved: Draft = JSON.parse(raw);
+      if (typeof saved.title === "string" && typeof saved.description === "string"
+        && Array.isArray(saved.questions) && saved.questions.every(q => typeof q.question_text === "string")
+        && Array.isArray(saved.choice_questions) && saved.choice_questions.every(q => typeof q.question_text === "string"
+          && Array.isArray(q.choices) && q.choices.every(option => typeof option === "string"))) return saved;
+    } catch { /* A missing or unreadable draft opens a fresh editor. */ }
+  }, [hydrated, key]);
+  return { draft, hydrated };
+}
+
+export function ManualForm({ owner }: { owner: number }) {
+  const key = `anoq:manual-draft:${owner}`;
+  const { draft, hydrated } = useSavedDraft(key);
+  return <Update key={draft ? key : "blank"} data={draft} draftKey={hydrated ? key : undefined} />;
+}
+
+export function Update({ data, slug, draftKey, onPublishDraft, onDiscardDraft }: Props) {
   const [title, setTitle] = useState(data?.title ?? "");
   const [description, setDescription] = useState(data?.description ?? "");
   const [rows, setRows] = useState(() => rowsFrom(data));
   const [pending, setPending] = useState(false);
   const [published, setPublished] = useState("");
   const [error, setError] = useState("");
+  const [version, setVersion] = useState(data?.updated_at);
+  const [conflict, setConflict] = useState(false);
   const { toast } = useToast();
   const editing = Boolean(slug);
+
+  useEffect(() => {
+    if (!draftKey) return;
+    try {
+      if (!title && !description && !rows.length) {
+        sessionStorage.removeItem(draftKey);
+        return;
+      }
+      sessionStorage.setItem(draftKey, JSON.stringify({
+        title, description,
+        questions: rows.filter(row => !row.choice).map(row => row.field),
+        choice_questions: rows.filter(row => row.choice).map(row => ({
+          question_text: row.field.question_text, choices: row.options.map(option => option.text),
+        })),
+      }));
+    } catch { /* The editor still works if browser storage is unavailable. */ }
+  }, [draftKey, title, description, rows]);
 
   function changeRow(key: string, update: (row: typeof rows[number]) => typeof rows[number]) {
     setRows(items => items.map(row => row.key === key ? update(row) : row));
@@ -68,17 +113,20 @@ export function Update({ data, slug }: Props) {
     try {
       const response = await fetch(slug ? `/api/forms/${encodeURIComponent(slug)}` : "/api/forms", {
         method: slug ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
-        body: JSON.stringify({ title: title.trim(), description: description.trim(), questions, choice_questions: choiceQuestions }),
+        body: JSON.stringify({ title: title.trim(), description: description.trim(), questions, choice_questions: choiceQuestions, expected_updated_at: editing ? version : undefined }),
       });
       const result = await response.json().catch(() => null);
+      setConflict(editing && response.status === 409);
       if (!response.ok) throw new Error(result?.error || "Couldn’t save your form. Your draft is still here.");
       if (!result?.slug) throw new Error("The response didn’t include a form link. Check your dashboard before trying again.");
       if (editing) {
+        setVersion(result.updated_at);
         setTitle(result.title);
         setDescription(result.description);
         setRows(rowsFrom(result));
       } else {
         setPublished(result.slug);
+        onPublishDraft?.(result.slug);
         setTitle("");
         setDescription("");
         setRows([]);
@@ -92,8 +140,8 @@ export function Update({ data, slug }: Props) {
     <Navbar section="Workspace"><Link href="/dashboard" className="nav-link">Dashboard <ArrowRight size={15} className="ml-2" /></Link></Navbar>
     <main className="desk">
       <header className="page-heading"><p className="kicker"><span className="ink-line" /> Form builder</p>
-        <h1>{editing ? "Edit your form." : "Create a feedback form."}</h1>
-        <p>{editing ? "Update the questions people see when they open your link." : "Give your form a title, then choose what you’d like to ask."}</p>
+        <h1>{onPublishDraft ? "Review your draft." : editing ? "Edit your form." : "Create a feedback form."}</h1>
+        <p>{onPublishDraft ? "Edit the generated questions. Publishing creates the link you can share." : editing ? "Update the questions people see when they open your link." : "Give your form a title, then choose what you’d like to ask."}</p>
       </header>
       {published && <p className="publish-note" role="status">Your form is ready. <Link className="inline-link" href={`/${published}`}>Open your form</Link></p>}
       <form onSubmit={submit}><fieldset className="editor-layout min-w-0" disabled={pending}>
@@ -116,21 +164,24 @@ export function Update({ data, slug }: Props) {
                   <Input required aria-label={`Question ${i + 1}, option ${j + 1}`} placeholder={`Option ${j + 1}`} value={option.text} onChange={e => changeRow(row.key, old => ({ ...old, options: old.options.map(item => item.key === option.key ? { ...item, text: e.target.value } : item) }))} />
                   <Button size="icon" type="button" variant="ghost" aria-label={`Remove option ${j + 1}`} onClick={() => changeRow(row.key, old => ({ ...old, options: old.options.filter(item => item.key !== option.key) }))}><Trash2 /></Button>
                 </div>)}<Button type="button" variant="ghost" size="sm" disabled={row.options.length >= 50} onClick={() => {
-                  const option = { key: crypto.randomUUID(), text: "" };
+                  const option = { key: clientKey(), text: "" };
                   changeRow(row.key, old => ({ ...old, options: [...old.options, option] }));
                 }}><Plus /> Add option</Button></>}
               </div>)}
               <Button type="button" variant="outline" disabled={rows.length >= 100} aria-label={choice ? "Add multiple choice question" : "Add written question"} onClick={() => {
-                const row = makeRow({ question_text: "", ...(choice ? { choices: ["", ""] } : {}) }, choice, crypto.randomUUID());
+                const row = makeRow({ question_text: "", ...(choice ? { choices: ["", ""] } : {}) }, choice, clientKey());
                 setRows(items => [...items, row]);
               }}><Plus /> Add question</Button>
             </section>;
           })}
         </div>
         {error && <p role="alert" className="form-error">{error}</p>}
+        {conflict && <a className="inline-link" href={`/update/${slug}`} target="_blank" rel="noreferrer">Open the latest version in a new tab</a>}
         <div className="editor-footer">
-          {editing ? <Link href="/dashboard" className="text-link">Back to dashboard</Link> : <Button asChild variant="ghost"><Link href="/create/ai"><Sparkles /> Build with AI</Link></Button>}
-          <Button disabled={pending} type="submit">{pending ? "Saving…" : editing ? "Save changes" : "Create form"} <ArrowRight /></Button>
+          {onDiscardDraft ? <Button type="button" variant="ghost" onClick={() => {
+            if (window.confirm("Discard these generated questions? Your product brief will be kept.")) onDiscardDraft();
+          }}>Discard draft</Button> : editing ? <Link href="/dashboard" className="text-link">Back to dashboard</Link> : <Button asChild variant="ghost"><Link href="/create/ai"><Sparkles /> Build with AI</Link></Button>}
+          <Button disabled={pending} type="submit">{pending ? "Saving…" : onPublishDraft ? "Publish form" : editing ? "Save changes" : "Create form"} <ArrowRight /></Button>
         </div>
       </fieldset></form>
     </main>

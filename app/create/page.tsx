@@ -1,7 +1,7 @@
-import { Update } from "@/components/FormUpdate";
+import { ManualForm } from "@/components/FormUpdate";
 import { requireWorkspace } from "@/lib/auth/workspace";
 
 export default async function CreatePage() {
-  await requireWorkspace("/create");
-  return <Update />;
+  const user = await requireWorkspace("/create");
+  return <ManualForm key={user.id} owner={user.id} />;
 }

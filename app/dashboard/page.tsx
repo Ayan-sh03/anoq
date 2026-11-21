@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { requireWorkspace } from "@/lib/auth/workspace";
 import { apiGet } from "@/lib/server-api";
-import type { FormSummary } from "@/lib/forms";
+import type { DashboardForm } from "@/lib/forms";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import DashboardForms from "@/components/DashboardForms";
@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   await requireWorkspace("/dashboard");
   const response = await apiGet("/api/users/me/forms");
   if (!response.ok) throw new Error("Couldn’t load your forms.");
-  const forms: FormSummary[] = await response.json();
+  const forms: DashboardForm[] = await response.json();
 
   return (
     <>

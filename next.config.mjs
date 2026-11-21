@@ -1,5 +1,6 @@
 export default function nextConfig() {
   return {
+    allowedDevOrigins: ["127.0.0.1", "*.localhost", ...(process.env.WEB_BIND_ADDRESS ? [process.env.WEB_BIND_ADDRESS] : [])],
     turbopack: { root: import.meta.dirname },
     async rewrites() {
       if (process.env.VERCEL) return [];

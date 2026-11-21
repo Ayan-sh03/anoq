@@ -73,7 +73,8 @@ export function AccountForm({ mode, next }: AuthFormProps) {
       </div>
       <div className="field-stack">
         <label>Email<Input type="email" autoComplete="email" name="email" value={formData.email} onChange={handleInputChange} required placeholder="you@example.com" /></label>
-        <label>Password<Input type="password" autoComplete={creating ? "new-password" : "current-password"} name="password" value={formData.password} onChange={handleInputChange} required /></label>
+        <label>Password<Input type="password" autoComplete={creating ? "new-password" : "current-password"} name="password" value={formData.password} onChange={handleInputChange} aria-describedby={creating ? "password-guidance" : undefined} required /></label>
+        {creating && <p id="password-guidance" className="panel-note">Use 8–72 bytes. Letters A–Z, numbers, and standard punctuation use one byte each.</p>}
         {creating && <details className="details-block">
           <summary>Profile details <span>(optional)</span></summary>
           <div className="field-stack">

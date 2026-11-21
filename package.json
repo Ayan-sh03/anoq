@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:local": "node --test scripts/test-local.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -21,6 +22,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
     "next": "16.4.6",
+    "qrcode.react": "^4.2.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "tailwind-merge": "^2.3.0",

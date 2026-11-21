@@ -99,15 +99,20 @@ func (a *app) getForm(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (a *app) dashboard(w http.ResponseWriter, r *http.Request, u user) error {
-	rows, err := a.db.Query(r.Context(), `SELECT id,title,coalesce(description,''),slug,status,created_at,updated_at FROM forms WHERE author_id=$1 ORDER BY created_at DESC,id DESC`, u.ID)
+	rows, err := a.db.Query(r.Context(), `SELECT id,title,coalesce(description,''),slug,status,created_at,updated_at,
+ (SELECT count(*) FROM filled_forms WHERE form_id=f.id) FROM forms f WHERE author_id=$1 ORDER BY created_at DESC,id DESC`, u.ID)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
-	forms := make([]form, 0)
+	type dashboardForm struct {
+		form
+		ResponseCount int `json:"response_count"`
+	}
+	forms := make([]dashboardForm, 0)
 	for rows.Next() {
-		var f form
-		if err := rows.Scan(&f.ID, &f.Title, &f.Description, &f.Slug, &f.Status, &f.CreatedAt, &f.UpdatedAt); err != nil {
+		var f dashboardForm
+		if err := rows.Scan(&f.ID, &f.Title, &f.Description, &f.Slug, &f.Status, &f.CreatedAt, &f.UpdatedAt, &f.ResponseCount); err != nil {
 			return err
 		}
 		f.AuthorID = u.ID
@@ -233,7 +238,10 @@ func cleanQuestions(ctx context.Context, tx pgx.Tx, ids []int, choice bool) erro
 	return err
 }
 func (a *app) update(w http.ResponseWriter, r *http.Request, u user) error {
-	var in formFields
+	var in struct {
+		formFields
+		ExpectedUpdatedAt *time.Time `json:"expected_updated_at"`
+	}
 	if err := body(w, r, &in); err != nil {
 		return err
 	}
@@ -248,15 +256,22 @@ func (a *app) update(w http.ResponseWriter, r *http.Request, u user) error {
 	}
 	defer tx.Rollback(ctx)
 	var id int
-	err = tx.QueryRow(ctx, `UPDATE forms SET title=$3,description=$4 WHERE slug=$1 AND author_id=$2 RETURNING id`, slug, u.ID, in.Title, in.Description).Scan(&id)
+	var version time.Time
+	err = tx.QueryRow(ctx, `SELECT id,updated_at FROM forms WHERE slug=$1 AND author_id=$2 FOR UPDATE`, slug, u.ID).Scan(&id, &version)
 	if err != nil {
+		return err
+	}
+	if in.ExpectedUpdatedAt != nil && !version.Equal(*in.ExpectedUpdatedAt) {
+		return problem(http.StatusConflict, "This form changed since you opened it. Compare the latest version before saving your edits.")
+	}
+	if _, err = tx.Exec(ctx, `UPDATE forms SET title=$2,description=$3 WHERE id=$1`, id, in.Title, in.Description); err != nil {
 		return err
 	}
 	old, err := loadForm(ctx, tx, slug)
 	if err != nil {
 		return err
 	}
-	if err = replaceQuestions(ctx, tx, id, old, in); err != nil {
+	if err = replaceQuestions(ctx, tx, id, old, in.formFields); err != nil {
 		return err
 	}
 	updated, err := loadForm(ctx, tx, slug)

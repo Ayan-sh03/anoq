@@ -1,0 +1,15 @@
+.git
+.agents
+.next
+.vercel
+node_modules
+build
+coverage
+.env*
+**/.env*
+**/*.pem
+**/*.key
+cookies.txt
+Todo.md
+go-backend
+*.tsbuildinfo

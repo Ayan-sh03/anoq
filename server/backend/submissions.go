@@ -16,11 +16,13 @@ type writtenAnswer struct {
 	QuestionID int    `json:"question_id"`
 	Answer     string `json:"answer"`
 	Prompt     string `json:"question_text,omitempty"`
+	Position   int    `json:"-"`
 }
 type choiceAnswer struct {
 	QuestionID int      `json:"choice_question_id"`
 	Choices    []string `json:"selected_choices"`
 	Prompt     string   `json:"question_text,omitempty"`
+	Position   int      `json:"-"`
 }
 type responseFields struct {
 	Name          string          `json:"name"`
@@ -65,30 +67,38 @@ func (in *responseFields) validate(f form) error {
 	if len(in.Answers) != len(f.Questions) || len(in.ChoiceAnswers) != len(f.ChoiceQuestions) {
 		return problem(400, "Answer all current questions. Reload if the form has changed.")
 	}
-	written := make(map[int]string, len(f.Questions))
-	for _, q := range f.Questions {
-		written[q.ID] = q.Text
+	written := make(map[int]int, len(f.Questions))
+	for position, q := range f.Questions {
+		written[q.ID] = position
 	}
 	for i := range in.Answers {
 		answer := &in.Answers[i]
-		prompt, ok := written[answer.QuestionID]
-		if !ok || strings.TrimSpace(answer.Answer) == "" || len(answer.Answer) > 20000 {
+		position, ok := written[answer.QuestionID]
+		if !ok {
+			return problem(400, "This form's questions changed. Reload to see the latest questions.")
+		}
+		if strings.TrimSpace(answer.Answer) == "" || len(answer.Answer) > 20000 {
 			return problem(400, "A written answer is missing or invalid.")
 		}
-		answer.Prompt = prompt
+		answer.Prompt = f.Questions[position].Text
+		answer.Position = position
 		delete(written, answer.QuestionID)
 	}
-	choices := make(map[int]question, len(f.ChoiceQuestions))
-	for _, q := range f.ChoiceQuestions {
-		choices[q.ID] = q
+	choices := make(map[int]int, len(f.ChoiceQuestions))
+	for position, q := range f.ChoiceQuestions {
+		choices[q.ID] = position
 	}
 	for i := range in.ChoiceAnswers {
 		answer := &in.ChoiceAnswers[i]
-		q, ok := choices[answer.QuestionID]
-		if !ok || len(answer.Choices) != 1 || !slices.Contains(q.Choices, answer.Choices[0]) {
+		position, ok := choices[answer.QuestionID]
+		if !ok {
+			return problem(400, "This form's questions changed. Reload to see the latest questions.")
+		}
+		if len(answer.Choices) != 1 || !slices.Contains(f.ChoiceQuestions[position].Choices, answer.Choices[0]) {
 			return problem(400, "Select a current option for each choice question.")
 		}
-		answer.Prompt = q.Text
+		answer.Prompt = f.ChoiceQuestions[position].Text
+		answer.Position = position
 		delete(choices, answer.QuestionID)
 	}
 	return nil
@@ -164,10 +174,10 @@ func (a *app) submit(w http.ResponseWriter, r *http.Request) error {
 	}
 	batch := &pgx.Batch{}
 	for _, a := range in.Answers {
-		batch.Queue(`INSERT INTO filled_form_answers(filled_form_id,question_id,answer,question_text) VALUES($1,$2,$3,$4)`, replyID, a.QuestionID, a.Answer, a.Prompt)
+		batch.Queue(`INSERT INTO filled_form_answers(filled_form_id,question_id,answer,question_text,position) VALUES($1,$2,$3,$4,$5)`, replyID, a.QuestionID, a.Answer, a.Prompt, a.Position)
 	}
 	for _, a := range in.ChoiceAnswers {
-		batch.Queue(`INSERT INTO filled_form_choice_answers(filled_form_id,choice_question_id,selected_choices,question_text) VALUES($1,$2,$3,$4)`, replyID, a.QuestionID, jsonChoices(a.Choices), a.Prompt)
+		batch.Queue(`INSERT INTO filled_form_choice_answers(filled_form_id,choice_question_id,selected_choices,question_text,position) VALUES($1,$2,$3,$4,$5)`, replyID, a.QuestionID, jsonChoices(a.Choices), a.Prompt, a.Position)
 	}
 	if err = tx.SendBatch(ctx, batch).Close(); err != nil {
 		return err
@@ -187,9 +197,9 @@ func (a *app) submissions(w http.ResponseWriter, r *http.Request, u user) error 
 		return err
 	}
 	rows, err := a.db.Query(ctx, `SELECT ff.id,coalesce(ff.name,''),coalesce(ff.email,''),ff.submitted_at,
- coalesce((SELECT jsonb_agg(jsonb_build_object('question_id',a.question_id,'answer',a.answer,'question_text',coalesce(a.question_text,q.question_text)) ORDER BY a.question_id)
+ coalesce((SELECT jsonb_agg(jsonb_build_object('question_id',a.question_id,'answer',a.answer,'question_text',coalesce(a.question_text,q.question_text)) ORDER BY a.position NULLS LAST,a.question_id)
  FROM filled_form_answers a JOIN questions q ON q.id=a.question_id WHERE a.filled_form_id=ff.id),'[]'),
- coalesce((SELECT jsonb_agg(jsonb_build_object('choice_question_id',a.choice_question_id,'selected_choices',a.selected_choices,'question_text',coalesce(a.question_text,q.question_text)) ORDER BY a.choice_question_id)
+ coalesce((SELECT jsonb_agg(jsonb_build_object('choice_question_id',a.choice_question_id,'selected_choices',a.selected_choices,'question_text',coalesce(a.question_text,q.question_text)) ORDER BY a.position NULLS LAST,a.choice_question_id)
  FROM filled_form_choice_answers a JOIN multiple_choice_questions q ON q.id=a.choice_question_id WHERE a.filled_form_id=ff.id),'[]')
  FROM filled_forms ff WHERE ff.form_id=$1 ORDER BY ff.submitted_at DESC,ff.id DESC`, formID)
 	if err != nil {

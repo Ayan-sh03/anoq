@@ -17,6 +17,7 @@ export interface ChoiceQuestion extends Question {
 
 export interface FeedbackForm extends FormSummary {
   author_id: number;
+  updated_at: string;
   questions?: Question[];
   choice_questions?: ChoiceQuestion[];
 }

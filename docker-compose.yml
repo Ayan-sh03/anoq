@@ -1,7 +1,6 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: anoq_postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: anoq_db
@@ -9,7 +8,7 @@ services:
       POSTGRES_PASSWORD: anoq_password
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./server/migrations/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
@@ -18,7 +17,58 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  migrate:
+    image: postgres:16-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: anoq_password
+    volumes:
+      - ./server/migrations/schema.sql:/schema.sql:ro
+    command: ["psql", "-X", "-v", "ON_ERROR_STOP=1", "-h", "postgres", "-U", "anoq_user", "-d", "anoq_db", "-f", "/schema.sql"]
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+      target: api
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://anoq_user:anoq_password@postgres:5432/anoq_db?sslmode=disable
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-}
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8000/api/health"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+      target: web
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      GO_API_ORIGIN: http://api:8000
+      WATCHPACK_POLLING: "1000"
+    volumes:
+      - ./app:/app/app:ro
+      - ./components:/app/components:ro
+      - ./hooks:/app/hooks:ro
+      - ./lib:/app/lib:ro
+      - ./public:/app/public:ro
+      - ./next.config.mjs:/app/next.config.mjs:ro
+      - ./tokens.css:/app/tokens.css:ro
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
 
 volumes:
   postgres_data:

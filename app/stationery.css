@@ -201,3 +201,30 @@ textarea.field { resize: vertical; min-height: 105px; }
 
 .toast-success { color: var(--sage); border-color: var(--sage); background: var(--light-sage); }
 .toast-warning { color: var(--amber); border-color: var(--amber); background: var(--light-amber); }
+
+.report-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; }
+.report-actions .text-link { display: inline-flex; align-items: center; gap: .25rem; }
+.collection-heading > div:first-child { min-width: 0; flex: 1 1 24rem; overflow-wrap: anywhere; }
+.report-section-title { margin: 0 0 1rem; font-size: clamp(1.5rem, 3vw, 2rem); }
+.choice-results { margin-bottom: 2.5rem; }
+.choice-result { display: grid; grid-template-columns: minmax(12rem, 2fr) minmax(0, 3fr); gap: 1rem 3rem; padding: 1.25rem 0; border-block-start: 1px solid var(--rule); }
+.choice-result:last-child { border-block-end: 1px solid var(--rule); }
+.choice-result h3 { font-weight: 650; overflow-wrap: anywhere; }
+.past-question { color: var(--dim); font-size: .82rem; }
+.choice-result dl { display: grid; gap: .65rem; }
+.choice-stat { display: grid; grid-template-columns: 1fr auto; gap: .2rem .8rem; font-size: .9rem; }
+.choice-stat dt { overflow-wrap: anywhere; }
+.choice-stat dd { font-variant-numeric: tabular-nums; font-weight: 650; }
+.choice-stat::after { content: ""; grid-column: 1 / -1; height: 4px; background: linear-gradient(to right, var(--sage) var(--vote-width), var(--rule) var(--vote-width)); }
+.event-display { max-width: 64rem; }
+.event-poster { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; gap: clamp(1.5rem, 5vw, 4rem); padding: clamp(1.5rem, 5vw, 4rem); background: var(--sheet); border: 1px solid var(--rule); border-top: 4px solid var(--ink); }
+.event-copy h1 { font: 400 clamp(2.1rem, 4.5vw, 4.5rem)/1.04 var(--font-title); margin: 1rem 0; overflow-wrap: anywhere; }
+.event-instruction { font-size: clamp(1.05rem, 2vw, 1.45rem); margin-bottom: 1.25rem; }
+.event-link { overflow-wrap: anywhere; }
+.event-code { width: min(100%, 24rem); aspect-ratio: 1; justify-self: center; border: 1px solid var(--rule); background: white; }
+.event-code svg { width: 100%; height: 100%; display: block; }
+.event-local-note { margin-top: 1rem; color: var(--dim); font-size: .9rem; }
+@media (max-width: 700px) {
+  .choice-result, .event-poster { grid-template-columns: minmax(0, 1fr); }
+  .event-code { width: min(100%, 19rem); }
+}

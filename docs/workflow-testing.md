@@ -13,14 +13,14 @@ Three simulated users worked in separate local accounts against the merged appli
 
 Start the stack with `docker compose up -d --build`. With Node.js installed, run `npm run test:local` from the repository root. The suite creates a temporary account, exercises the public HTTP endpoints, and removes its own forms, replies and account.
 
-The four automated workflows cover concurrent editor saves, simultaneous submission retries followed by closure, one browser responding to two different forms, and a form changing while a volunteer is answering. The PostgreSQL-backed Go tests also cover historical answer order and the AI preview’s database effects. Set `ANOQ_TEST_DATABASE_URL` to the local Compose database URL in `.env.example` and run `go test -count=1 ./server/backend`. The automated AI test uses a provider fixture.
+The six automated workflows cover concurrent editor saves, simultaneous submission retries followed by closure, one browser responding to two different forms, a form changing mid-response, versioned reports and exports, and two attendees using one event display. The PostgreSQL-backed Go tests also cover historical answer order and the AI preview’s database effects. Set `ANOQ_TEST_DATABASE_URL` to the local Compose database URL in `.env.example` and run `go test -count=1 ./server/backend`. The automated AI test uses a provider fixture.
 
 The browser pass included Chromium at 320, 375 and 390 CSS pixels, keyboard-only answering, duplicate-looking form titles, searching by an answer or contact email, sorting replies, closing and reopening collection, clipboard denial and recovery from an interrupted request. These are functional checks with simulated users. Physical devices, production traffic and user conversion rates were outside this test.
 
-## What to build next
+## Follow-up
 
-1. **Help an organizer decide what to change.** The museum coordinator can find an individual reply, but comparing two workshops still means opening responses one by one. Start with response counts and per-choice totals. Add a CSV export that preserves original prompts and distinguishes question versions. A good acceptance test is comparing two identically titled workshops after one changed its questions.
-2. **Support a shared tablet at an event.** On a personal device, the receipt prevents accidental duplicate responses. In a queue, the next attendee on that tablet sees the previous attendee’s receipt. Try a QR handoff to personal devices first. Use two consecutive attendees as the acceptance test, including a retry by the first attendee.
+1. **Response reporting is implemented.** The museum organizer can compare dashboard counts, see option totals by question version and export the original prompts. The regression test uses two identically titled workshops and edits the first after an answer arrives.
+2. **The shared tablet now has a QR display.** Each attendee scans the tablet with their own phone. The regression test covers two attendees, a retry and closing collection.
 3. **Run the critical journeys on every pull request.** Start Compose in CI, run the HTTP and Go regression tests, and add one persistent browser test for draft recovery through publication. Preserve the browser trace on failure. This gives a reviewer a repeatable demonstration of the system under failure.
 
 ## Résumé bullet

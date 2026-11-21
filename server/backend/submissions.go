@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"regexp"
@@ -190,11 +191,18 @@ func (a *app) submit(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (a *app) submissions(w http.ResponseWriter, r *http.Request, u user) error {
-	ctx := r.Context()
-	var formID int
-	err := a.db.QueryRow(ctx, `SELECT id FROM forms WHERE slug=$1 AND author_id=$2`, r.PathValue("slug"), u.ID).Scan(&formID)
+	replies, err := a.ownerReplies(r.Context(), r.PathValue("slug"), u.ID)
 	if err != nil {
 		return err
+	}
+	return respond(w, 200, replies)
+}
+
+func (a *app) ownerReplies(ctx context.Context, slug string, ownerID int) ([]reply, error) {
+	var formID int
+	err := a.db.QueryRow(ctx, `SELECT id FROM forms WHERE slug=$1 AND author_id=$2`, slug, ownerID).Scan(&formID)
+	if err != nil {
+		return nil, err
 	}
 	rows, err := a.db.Query(ctx, `SELECT ff.id,coalesce(ff.name,''),coalesce(ff.email,''),ff.submitted_at,
  coalesce((SELECT jsonb_agg(jsonb_build_object('question_id',a.question_id,'answer',a.answer,'question_text',coalesce(a.question_text,q.question_text)) ORDER BY a.position NULLS LAST,a.question_id)
@@ -203,19 +211,16 @@ func (a *app) submissions(w http.ResponseWriter, r *http.Request, u user) error 
  FROM filled_form_choice_answers a JOIN multiple_choice_questions q ON q.id=a.choice_question_id WHERE a.filled_form_id=ff.id),'[]')
  FROM filled_forms ff WHERE ff.form_id=$1 ORDER BY ff.submitted_at DESC,ff.id DESC`, formID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer rows.Close()
 	replies := make([]reply, 0)
 	for rows.Next() {
 		var item reply
 		if err := rows.Scan(&item.ID, &item.Name, &item.Email, &item.Submitted, &item.Answers, &item.ChoiceAnswers); err != nil {
-			return err
+			return nil, err
 		}
 		replies = append(replies, item)
 	}
-	if err := rows.Err(); err != nil {
-		return err
-	}
-	return respond(w, 200, replies)
+	return replies, rows.Err()
 }

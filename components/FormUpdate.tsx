@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { clientKey } from "@/lib/client-key";
 import { ArrowRight, ListChecks, Plus, Sparkles, Trash2, Type } from "lucide-react";
 import Navbar from "./Navbar";
 import { Button } from "./ui/button";
@@ -163,12 +164,12 @@ export function Update({ data, slug, draftKey, onPublishDraft, onDiscardDraft }:
                   <Input required aria-label={`Question ${i + 1}, option ${j + 1}`} placeholder={`Option ${j + 1}`} value={option.text} onChange={e => changeRow(row.key, old => ({ ...old, options: old.options.map(item => item.key === option.key ? { ...item, text: e.target.value } : item) }))} />
                   <Button size="icon" type="button" variant="ghost" aria-label={`Remove option ${j + 1}`} onClick={() => changeRow(row.key, old => ({ ...old, options: old.options.filter(item => item.key !== option.key) }))}><Trash2 /></Button>
                 </div>)}<Button type="button" variant="ghost" size="sm" disabled={row.options.length >= 50} onClick={() => {
-                  const option = { key: crypto.randomUUID(), text: "" };
+                  const option = { key: clientKey(), text: "" };
                   changeRow(row.key, old => ({ ...old, options: [...old.options, option] }));
                 }}><Plus /> Add option</Button></>}
               </div>)}
               <Button type="button" variant="outline" disabled={rows.length >= 100} aria-label={choice ? "Add multiple choice question" : "Add written question"} onClick={() => {
-                const row = makeRow({ question_text: "", ...(choice ? { choices: ["", ""] } : {}) }, choice, crypto.randomUUID());
+                const row = makeRow({ question_text: "", ...(choice ? { choices: ["", ""] } : {}) }, choice, clientKey());
                 setRows(items => [...items, row]);
               }}><Plus /> Add question</Button>
             </section>;

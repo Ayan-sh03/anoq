@@ -1,19 +1,23 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { networkInterfaces } from "node:os";
 import { execFileSync } from "node:child_process";
 import { after, before, test } from "node:test";
 
 const binding = execFileSync("docker", ["compose", "port", "web", "3000"], { encoding: "utf8" }).trim();
-assert.match(binding, /^127\.0\.0\.1:\d+$/, "Run the local Compose stack first.");
-const origin = "http://" + binding;
+const port = new URL("http://" + binding);
+if (port.hostname === "0.0.0.0") port.hostname = "127.0.0.1";
+assert.ok(Object.values(networkInterfaces()).flat().some(nic => nic?.address === port.hostname), "Use a local Compose stack.");
+const origin = port.origin;
 const email = "workflow-" + randomUUID() + "@example.test";
 const forms = new Set();
 let ownerCookie, ownerID;
 
-async function request(path, { method = "GET", body, cookie, key } = {}) {
+async function request(path, { method = "GET", body, cookie, key, browserOrigin } = {}) {
   const headers = { "Content-Type": "application/json" };
   if (cookie) headers.Cookie = cookie;
   if (key) headers["Idempotency-Key"] = key;
+  if (browserOrigin) headers.Origin = browserOrigin;
   return fetch(origin + path, {
     method, headers, body: body && JSON.stringify(body), signal: AbortSignal.timeout(20000),
   });
@@ -43,11 +47,11 @@ after(async () => {
   assert.equal(ownerSQL("DELETE FROM users WHERE id=:'id' AND email=:'email' RETURNING id;"), String(ownerID));
 });
 
-async function createForm() {
+async function createForm(overrides = {}) {
   const result = await request("/api/forms", {
     method: "POST", cookie: ownerCookie, body: {
       title: "Volunteer orientation", description: "Saturday session",
-      questions: [{ question_text: "What would you change?" }], choice_questions: [],
+      questions: [{ question_text: "What would you change?" }], choice_questions: [], ...overrides,
     },
   });
   assert.equal(result.status, 201);
@@ -123,4 +127,72 @@ test("editing a question while someone is answering gives recovery instructions 
   assert.match((await oldAnswer.json()).error, /reload/i);
   const replies = await request(path + "/submissions", { cookie: ownerCookie });
   assert.deepEqual(await replies.json(), []);
+});
+
+test("reporting separates question versions, includes zero votes and exports the recorded prompt", async () => {
+  const { form, path } = await createForm({ questions: [], choice_questions: [
+    { question_text: "Which workshop, exactly?", choices: ["Printmaking", "Sculpture"] },
+  ] });
+  const other = await createForm();
+  const asOwner = { cookie: ownerCookie };
+  const summary = async () => {
+    const res = await request(path + "/report", asOwner);
+    assert.equal(res.status, 200);
+    return res.json();
+  };
+  const vote = async (id, label) => {
+    const res = await request(path + "/submit", { method: "POST", key: randomUUID(), body: {
+      answers: [], choice_answers: [{ choice_question_id: id, selected_choices: [label] }],
+    } });
+    assert.equal(res.status, 201);
+  };
+  assert.equal((await summary()).response_count, 0);
+  const emptyCSV = await request(path + "/responses.csv", asOwner);
+  assert.equal((await emptyCSV.text()).trim().split("\n").length, 1);
+  assert.equal((await request(path + "/report")).status, 401);
+  assert.equal((await request(path + "/responses.csv")).status, 401);
+  await vote(form.choice_questions[0].id, "Printmaking");
+  await vote(form.choice_questions[0].id, "Printmaking");
+  const edit = await request(path, { method: "PATCH", cookie: ownerCookie, body: {
+    ...form, choice_questions: [{ ...form.choice_questions[0], question_text: "Which session next?", choices: ["Drawing", "Printmaking"] }],
+  } });
+  assert.equal(edit.status, 200);
+  const current = (await edit.json()).choice_questions[0];
+  await vote(current.id, "Drawing");
+  const report = await summary();
+  assert.equal(report.response_count, 3);
+  assert.deepEqual(report.choice_questions, [
+    { id: current.id, prompt: "Which session next?", previous: false, options: [{ label: "Drawing", count: 1 }, { label: "Printmaking", count: 0 }] },
+    { id: form.choice_questions[0].id, prompt: "Which workshop, exactly?", previous: true, options: [{ label: "Printmaking", count: 2 }, { label: "Sculpture", count: 0 }] },
+  ]);
+  const dashboard = await (await request("/api/users/me/forms", asOwner)).json();
+  assert.equal(dashboard.find(f => f.slug === form.slug).response_count, 3);
+  assert.equal(dashboard.find(f => f.slug === other.form.slug).response_count, 0);
+  const download = await request(path + "/responses.csv", asOwner);
+  assert.match(download.headers.get("content-type"), /text\/csv/);
+  assert.match(download.headers.get("content-disposition"), /attachment/);
+  const csv = await download.text();
+  assert.equal(csv.split('"Which workshop, exactly?",Printmaking').length - 1, 2);
+  assert.match(csv, /Which session next\?,Drawing/);
+});
+
+test("an event display works for successive phones and preserves each browser receipt", async () => {
+  const { form, path } = await createForm();
+  const event = "/event/" + form.slug;
+  const send = (key, cookie) => request(path + "/submit", { method: "POST", key, cookie, browserOrigin: origin, body: {
+    answers: [{ question_id: form.questions[0].id, answer: "More table space" }], choice_answers: [],
+  } });
+  const firstKey = randomUUID();
+  const first = await send(firstKey);
+  assert.equal(first.status, 201);
+  const cookie = first.headers.getSetCookie()[0].split(";")[0];
+  const display = await request(event, { cookie });
+  assert.equal(display.status, 200);
+  assert.match(await display.text(), /Scan with your phone camera/);
+  assert.equal((await send(firstKey, cookie)).status, 200);
+  assert.equal((await send(randomUUID(), cookie)).status, 409);
+  assert.equal((await send(randomUUID())).status, 201);
+  assert.equal((await (await request(path + "/report", { cookie: ownerCookie })).json()).response_count, 2);
+  await request(path + "/close", { method: "PATCH", cookie: ownerCookie });
+  assert.match(await (await request(event)).text(), /This box is closed/);
 });

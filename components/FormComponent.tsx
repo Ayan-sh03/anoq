@@ -6,6 +6,8 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 
 import type { FeedbackForm } from "@/lib/forms";
+import { clientKey } from "@/lib/client-key";
+import Link from "next/link";
 
 export default function FormComponent({ form }: { form: FeedbackForm }) {
   const questions = form.questions ?? [];
@@ -69,7 +71,7 @@ export default function FormComponent({ form }: { form: FeedbackForm }) {
     setError("");
     const endpoint = `/api/forms/${encodeURIComponent(form.slug)}`;
     try {
-      submissionKey.current ??= crypto.randomUUID();
+      submissionKey.current ??= clientKey();
       saveDraft(data);
       const payload = {
         name, email,
@@ -103,7 +105,7 @@ export default function FormComponent({ form }: { form: FeedbackForm }) {
   }
 
   return <main className="desk desk-narrow">
-    {sent ? <section className="state-sheet" role="status"><p className="kicker"><Check size={16} /> Response received</p><h1>{sent === "prior" ? "Your note is in." : "Thanks for the note."}</h1><p>{sent === "prior" ? "You already sent feedback from this browser." : "Your feedback has reached the form owner."}</p></section>
+    {sent ? <section className="state-sheet" role="status"><p className="kicker"><Check size={16} /> Response received</p><h1>{sent === "prior" ? "Your note is in." : "Thanks for the note."}</h1><p>{sent === "prior" ? "You already sent feedback from this browser." : "Your feedback has reached the form owner."}</p><Link className="text-link" href={`/event/${form.slug}`}>Show event QR</Link></section>
       : <form ref={formRef} method="post" className="paper-panel responder" onSubmit={submit} onChange={event => saveDraft(new FormData(event.currentTarget))}>
         <header className="page-heading"><p className="kicker"><span className="ink-line" /> Feedback form</p><h1>{form.title}</h1>{form.description && <p>{form.description}</p>}</header>
         <fieldset disabled={busy} className="field-stack">

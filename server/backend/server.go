@@ -54,7 +54,10 @@ func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	if origin := r.Header.Get("Origin"); origin != "" && r.Method != http.MethodGet && r.Method != http.MethodHead {
 		parsed, err := url.Parse(origin)
-		if err != nil || (!strings.EqualFold(parsed.Host, r.Host) && r.Header.Get("Sec-Fetch-Site") != "same-origin") {
+		// Plain HTTP LAN browsers omit Fetch Metadata, and the local Next.js
+		// proxy replaces Host with the API service name.
+		localWebOrigin := os.Getenv("VERCEL_ENV") == "" && origin == os.Getenv("LOCAL_WEB_ORIGIN")
+		if err != nil || (!strings.EqualFold(parsed.Host, r.Host) && r.Header.Get("Sec-Fetch-Site") != "same-origin" && !localWebOrigin) {
 			writeError(w, problem(http.StatusForbidden, "Request origin is not allowed."))
 			return
 		}
@@ -111,6 +114,8 @@ func (a *app) routes() http.Handler {
 	add("POST /api/forms/{slug}/submit", a.submit)
 	add("GET /api/forms/{slug}/submitted", a.submitted)
 	add("GET /api/forms/{slug}/submissions", private(a.submissions))
+	add("GET /api/forms/{slug}/report", private(a.report))
+	add("GET /api/forms/{slug}/responses.csv", private(a.exportCSV))
 	return mux
 }
 

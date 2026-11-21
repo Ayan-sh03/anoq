@@ -99,15 +99,20 @@ func (a *app) getForm(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (a *app) dashboard(w http.ResponseWriter, r *http.Request, u user) error {
-	rows, err := a.db.Query(r.Context(), `SELECT id,title,coalesce(description,''),slug,status,created_at,updated_at FROM forms WHERE author_id=$1 ORDER BY created_at DESC,id DESC`, u.ID)
+	rows, err := a.db.Query(r.Context(), `SELECT id,title,coalesce(description,''),slug,status,created_at,updated_at,
+ (SELECT count(*) FROM filled_forms WHERE form_id=f.id) FROM forms f WHERE author_id=$1 ORDER BY created_at DESC,id DESC`, u.ID)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
-	forms := make([]form, 0)
+	type dashboardForm struct {
+		form
+		ResponseCount int `json:"response_count"`
+	}
+	forms := make([]dashboardForm, 0)
 	for rows.Next() {
-		var f form
-		if err := rows.Scan(&f.ID, &f.Title, &f.Description, &f.Slug, &f.Status, &f.CreatedAt, &f.UpdatedAt); err != nil {
+		var f dashboardForm
+		if err := rows.Scan(&f.ID, &f.Title, &f.Description, &f.Slug, &f.Status, &f.CreatedAt, &f.UpdatedAt, &f.ResponseCount); err != nil {
 			return err
 		}
 		f.AuthorID = u.ID

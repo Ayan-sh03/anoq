@@ -5,9 +5,9 @@ import { ArrowRight, LayoutGrid, List, Search } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import FormCard from "./FormCard";
-import type { FormSummary } from "@/lib/forms";
+import type { DashboardForm } from "@/lib/forms";
 
-export default function DashboardForms({ forms }: { forms: FormSummary[] }) {
+export default function DashboardForms({ forms }: { forms: DashboardForm[] }) {
   const [query, setQuery] = useState("");
   const [grid, setGrid] = useState(true);
   const term = query.trim().toLowerCase();

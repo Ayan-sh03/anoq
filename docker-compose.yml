@@ -38,6 +38,7 @@ services:
         condition: service_completed_successfully
     environment:
       DATABASE_URL: postgres://anoq_user:anoq_password@postgres:5432/anoq_db?sslmode=disable
+      LOCAL_WEB_ORIGIN: http://${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-3000}
       GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-}
     ports:
@@ -59,6 +60,7 @@ services:
     environment:
       GO_API_ORIGIN: http://api:8000
       WATCHPACK_POLLING: "1000"
+      WEB_BIND_ADDRESS: ${WEB_BIND_ADDRESS:-127.0.0.1}
     volumes:
       - ./app:/app/app:ro
       - ./components:/app/components:ro
@@ -68,7 +70,7 @@ services:
       - ./next.config.mjs:/app/next.config.mjs:ro
       - ./tokens.css:/app/tokens.css:ro
     ports:
-      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+      - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-3000}:3000"
 
 volumes:
   postgres_data:

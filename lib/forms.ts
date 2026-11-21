@@ -6,6 +6,22 @@ export interface FormSummary {
   status: "open" | "closed";
 }
 
+export interface FormReport {
+  title: string;
+  status: FormSummary["status"];
+  response_count: number;
+  choice_questions: {
+    id: number;
+    prompt: string;
+    previous: boolean;
+    options: { label: string; count: number }[];
+  }[];
+}
+
+export interface DashboardForm extends FormSummary {
+  response_count: number;
+}
+
 export interface Question {
   id: number;
   question_text: string;

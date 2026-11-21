@@ -35,7 +35,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-dbschema/edgeql-js
-dbschema/migrations
 Todo.md
-.vercel
+cookies.txt
